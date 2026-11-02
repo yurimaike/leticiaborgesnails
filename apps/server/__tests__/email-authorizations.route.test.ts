@@ -107,6 +107,54 @@ describe("admin email authorizations", () => {
   });
 
 
+  it("creates the first account and temporary password for an authorised email", async () => {
+    const admin = await signUpAndGetToken(app, { email: "admin-first-access@example.com" });
+    await executeSql("UPDATE user SET role = 'admin' WHERE id = ?", [admin.userId!]);
+    const email = "leticiacaio.borges30@gmail.com";
+    const authorised = await fetchWithAuth(app, admin.token, "/api/email-authorizations", {
+      method: "POST", body: JSON.stringify({ email })
+    });
+    expect(authorised.status).toBe(201);
+
+    const future = new Date();
+    future.setDate(future.getDate() + 30);
+    const bookingDate = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, "0")}-${String(future.getDate()).padStart(2, "0")}`;
+    const booking = await app.fetch(new Request("http://localhost/api/bookings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        customerName: "Leticia Caio Borges",
+        customerEmail: email,
+        customerPhone: "51999999999",
+        bookingDate,
+        bookingTime: "11:00",
+        service: "Manicure e pedicure"
+      })
+    }));
+    expect(booking.status).toBe(201);
+    expect((await executeSql("SELECT id FROM user WHERE lower(email) = lower(?)", [email])).rows).toHaveLength(0);
+
+    const generated = await fetchWithAuth(app, admin.token, `/api/email-authorizations/${encodeURIComponent(email)}/reset-password`, { method: "POST" });
+    expect(generated.status).toBe(200);
+    const generatedBody = await generated.json() as { data?: { account: { id: string; name: string }; temporaryPassword: string; mustChangePassword: boolean } };
+    expect(generatedBody.data?.account.name).toBe("Leticia Caio Borges");
+    expect(generatedBody.data?.temporaryPassword).toBeTruthy();
+    expect(generatedBody.data?.mustChangePassword).toBe(true);
+
+    const userRows = await executeSql("SELECT id, mustChangePassword FROM user WHERE lower(email) = lower(?)", [email]);
+    expect(userRows.rows).toHaveLength(1);
+    expect(userRows.rows[0].id).toBe(generatedBody.data?.account.id);
+    expect(userRows.rows[0].mustChangePassword).toBe(1);
+    const linkedBookings = await executeSql("SELECT userId FROM bookings WHERE lower(customerEmail) = lower(?)", [email]);
+    expect(linkedBookings.rows[0].userId).toBe(generatedBody.data?.account.id);
+
+    const generatedAgain = await fetchWithAuth(app, admin.token, `/api/email-authorizations/${encodeURIComponent(email)}/reset-password`, { method: "POST" });
+    expect(generatedAgain.status).toBe(200);
+    const after = await executeSql("SELECT id FROM user WHERE lower(email) = lower(?)", [email]);
+    expect(after.rows).toHaveLength(1);
+    expect(after.rows[0].id).toBe(generatedBody.data?.account.id);
+  });
+
   it("allows an admin to remove an authorised email when its original account does not exist", async () => {
     const admin = await signUpAndGetToken(app, { email: "admin-orphan-remove@example.com" });
     await executeSql("UPDATE user SET role = 'admin' WHERE id = ?", [admin.userId!]);
