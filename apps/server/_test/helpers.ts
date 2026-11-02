@@ -46,7 +46,7 @@ function splitSqlStatements(sql: string): string[] {
 
 // Wipe all per-user data so each test starts clean. Delete in dependency
 // order (child tables first) so ON DELETE CASCADE doesn't fire mid-loop.
-// Auth tables are reset too so signUp can be called repeatedly with a fresh
+// Auth tables are reset too so test users can be created repeatedly with a fresh
 // email and not collide on UNIQUE(email).
 export async function resetDatabase(): Promise<void> {
   await executeSql("DELETE FROM todos");
@@ -66,11 +66,10 @@ export type SignedUpUser = {
   userId?: string;
 };
 
-// Sign up via the real Hono app at POST /api/auth/sign-up/email. Better Auth's
-// bearer() plugin returns the session token in the `set-auth-token` response
-// header — that's what subsequent requests need as `Authorization: Bearer X`.
-// A monotonic counter + timestamp ensures emails are unique across calls in
-// the same test process.
+// Create a test fixture directly through Better Auth's server API because
+// public self-registration is closed. The bearer plugin returns the token
+// used by subsequent requests as `Authorization: Bearer X`. A monotonic
+// counter + timestamp keeps generated fixture emails unique.
 export async function signUpAndGetToken(
   _app: { fetch: (req: Request) => Promise<Response> },
   overrides: { email?: string; password?: string; name?: string } = {}
