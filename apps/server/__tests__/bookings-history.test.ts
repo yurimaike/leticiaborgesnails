@@ -43,8 +43,8 @@ describe("customer booking history access", () => {
 
     await createBooking(booking, { id: "account-1", email: "outro@example.com" });
 
-    const insertArguments = execute.mock.calls[0]?.[1];
-    expect(insertArguments?.at(-1)).toBeNull();
+    const insertCall = execute.mock.calls.find(([sql]) => String(sql).includes("INSERT INTO bookings"));
+    expect(insertCall?.[1]?.at(-1)).toBeNull();
   });
 
   it("maps only the active time-slot unique constraint to a booking conflict", async () => {
