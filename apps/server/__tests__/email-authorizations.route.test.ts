@@ -153,6 +153,53 @@ describe("admin email authorizations", () => {
     const after = await executeSql("SELECT id FROM user WHERE lower(email) = lower(?)", [email]);
     expect(after.rows).toHaveLength(1);
     expect(after.rows[0].id).toBe(generatedBody.data?.account.id);
+
+    // First access must still work if the browser sends a previous temporary
+    // session token while retrying sign-in.
+    const secondPassword = (await generatedAgain.json() as { data?: { temporaryPassword: string } }).data!.temporaryPassword;
+    const login = await app.fetch(new Request("http://localhost/api/auth/sign-in/email", {
+      method: "POST",
+      headers: { "content-type": "application/json", origin: "http://localhost:3000" },
+      body: JSON.stringify({ email, password: secondPassword })
+    }));
+    expect(login.status).toBe(200);
+    const staffToken = login.headers.get("set-auth-token");
+    expect(staffToken).toBeTruthy();
+
+    const retryLogin = await app.fetch(new Request("http://localhost/api/auth/sign-in/email", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost:3000",
+        authorization: `Bearer ${staffToken}`
+      },
+      body: JSON.stringify({ email, password: secondPassword })
+    }));
+    expect(retryLogin.status).toBe(200);
+
+    const status = await fetchWithAuth(app, staffToken!, "/api/account/first-login-status");
+    expect(status.status).toBe(200);
+    await expect(status.json()).resolves.toMatchObject({ ok: true, data: { mustChangePassword: true } });
+
+    const changed = await app.fetch(new Request("http://localhost/api/auth/change-password", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost:3000",
+        authorization: `Bearer ${staffToken}`
+      },
+      body: JSON.stringify({
+        currentPassword: secondPassword,
+        newPassword: "leticia-first-access-password-2026",
+        revokeOtherSessions: true
+      })
+    }));
+    expect(changed.status).toBe(200);
+
+    const passwordFlag = await executeSql("SELECT mustChangePassword FROM user WHERE id = ?", [generatedBody.data?.account.id]);
+    expect(Number(passwordFlag.rows[0]?.mustChangePassword)).toBe(0);
+    const accountCount = await executeSql("SELECT COUNT(*) AS count FROM user WHERE lower(email) = lower(?)", [email]);
+    expect(Number(accountCount.rows[0]?.count)).toBe(1);
   });
 
   it("allows an admin to remove an authorised email when its original account does not exist", async () => {
