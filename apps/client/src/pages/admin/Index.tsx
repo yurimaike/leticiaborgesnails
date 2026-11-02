@@ -160,6 +160,29 @@ function AdminContent() {
     finally { setBusy(""); }
   }
 
+  function generatePaymentReceipt(booking: Booking) {
+    if (booking.paymentStatus !== "paid") return;
+    const raw = window.prompt("Informe o valor recebido (R$) para o comprovante. Exemplo: 85,00");
+    if (raw === null) return;
+    const amount = Number(raw.trim().replace(",", "."));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Informe um valor válido para gerar o comprovante.");
+      return;
+    }
+    const safe = (value: string) => value.replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[char] ?? char);
+    const date = new Date().toLocaleDateString("pt-BR");
+    const money = amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      setError("Permita a abertura de janelas para gerar o PDF.");
+      return;
+    }
+    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Comprovante de pagamento</title><style>body{font-family:Arial,sans-serif;color:#493629;max-width:720px;margin:40px auto;padding:32px;border:1px solid #eadbce}h1{color:#80634d}p{padding:8px 0;border-bottom:1px solid #eee5dc}.note{font-size:12px;color:#806c5d;margin-top:28px}@media print{body{margin:0;border:0}}</style></head><body><h1>Comprovante de pagamento</h1><p><b>Estúdio:</b> Leticia Nail Designer</p><p><b>Cliente:</b> ${safe(booking.customerName)}</p><p><b>Reserva:</b> ${safe(booking.bookingCode)}</p><p><b>Serviço(s):</b> ${safe(booking.service)}</p><p><b>Data do atendimento:</b> ${safe(booking.bookingDate)} às ${safe(booking.bookingTime)}</p><p><b>Valor recebido:</b> ${money}</p><p><b>Data de emissão:</b> ${date}</p><p class="note">Comprovante de recebimento emitido pelo estabelecimento. Este documento não substitui nota fiscal eletrônica.</p><script>window.onload=function(){window.print()}</script></body></html>`);
+    printWindow.document.close();
+  }
+
   async function toggleLoyalty() {
     try {
       const response = await apiFetch("/loyalty/settings", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ enabled: !loyalty.enabled }) });
@@ -347,7 +370,7 @@ function AdminContent() {
                     <div className="mt-4 rounded-xl bg-[#fbf6f0] p-4 text-sm text-[#705f51]">
                       <p>Pagamento: <strong>{booking.paymentStatus === "paid" ? "Recebido" : "Não recebido"}</strong></p>
                       <p className="mt-1">Atendimento: <strong>{booking.completedAt ? "Concluído" : "Não concluído"}</strong></p>
-                      {status !== "rejected" && status !== "cancelled" && <div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={!!busy} onClick={() => void updateBookingFlag(booking, "payment", booking.paymentStatus !== "paid")} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-xs font-semibold text-[#705844] disabled:opacity-50">{booking.paymentStatus === "paid" ? "Marcar não recebido" : "Confirmar pagamento"}</button><button type="button" disabled={!!busy || (booking.paymentStatus !== "paid" && !booking.completedAt)} onClick={() => void updateBookingFlag(booking, "completion", !booking.completedAt)} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-xs font-semibold text-[#705844] disabled:opacity-50">{booking.completedAt ? "Reabrir atendimento" : "Marcar concluído"}</button></div>}
+                      {status !== "rejected" && status !== "cancelled" && <div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={!!busy} onClick={() => void updateBookingFlag(booking, "payment", booking.paymentStatus !== "paid")} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-xs font-semibold text-[#705844] disabled:opacity-50">{booking.paymentStatus === "paid" ? "Marcar não recebido" : "Confirmar pagamento"}</button>{booking.paymentStatus === "paid" && <button type="button" onClick={() => generatePaymentReceipt(booking)} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-xs font-semibold text-[#705844]">Gerar comprovante PDF</button>}<button type="button" disabled={!!busy || (booking.paymentStatus !== "paid" && !booking.completedAt)} onClick={() => void updateBookingFlag(booking, "completion", !booking.completedAt)} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-xs font-semibold text-[#705844] disabled:opacity-50">{booking.completedAt ? "Reabrir atendimento" : "Marcar concluído"}</button></div>}
                     </div>
                     <div className="mt-5 flex flex-wrap gap-2 border-t border-[#f0e7df] pt-4">
                       {status === "pending" && <>
