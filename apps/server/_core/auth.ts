@@ -1,8 +1,6 @@
 ﻿import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin as adminPlugin, bearer, openAPI, username } from "better-auth/plugins";
-import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements } from "better-auth/plugins/admin/access";
+import { bearer, openAPI, username } from "better-auth/plugins";
 import * as schema from "../db/schema";
 import { getDb } from "./db";
 import { env } from "./env";
@@ -19,10 +17,6 @@ export type AuthUser = {
   username?: string;
   mustChangePassword?: boolean;
 };
-
-const adminAccessControl = createAccessControl(defaultStatements);
-const passwordResetAdminRole = adminAccessControl.newRole({ user: ["set-password"] });
-const standardUserRole = adminAccessControl.newRole({ user: [] });
 
 export type AuthSession = {
   id: string;
@@ -76,15 +70,7 @@ function createAuth() {
       }
     },
     socialProviders,
-    plugins: [
-      username(),
-      bearer(),
-      openAPI(),
-      adminPlugin({
-        ac: adminAccessControl,
-        roles: { admin: passwordResetAdminRole, user: standardUserRole }
-      })
-    ]
+    plugins: [username(), bearer(), openAPI()]
   });
 }
 
