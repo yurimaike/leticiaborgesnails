@@ -14,7 +14,7 @@ export default function ServicesPage() {
   return (
     <SiteLayout
       title="Serviços | Nail Designer Leticia"
-      description="Conheça os serviços de manicure, pedicure, esmaltação em gel, banho de gel e manutenção da Leticia."
+      description="Conheça os serviços de esmaltação em gel, pés tradicional, mãos tradicional e manutenção da Leticia."
     >
       <main>
         <section className="page-intro section-shell">
