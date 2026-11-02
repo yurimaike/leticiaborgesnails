@@ -4,7 +4,7 @@ import { executeSql } from "../_core/db";
 import { applyMigrations, fetchWithAuth, resetDatabase, signUpAndGetToken } from "../_test/helpers";
 
 beforeAll(async () => { await applyMigrations(); });
-beforeEach(async () => { await resetDatabase(); await executeSql("DELETE FROM bookings"); });
+beforeEach(async () => { await resetDatabase(); await executeSql("DELETE FROM bookings"); await executeSql("UPDATE salon_settings SET is_open=1, opening_time='08:00', closing_time='19:00' WHERE id=1"); });
 function futureDate(days: number) {
   const d = new Date(); d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -19,6 +19,28 @@ describe("bookings route", () => {
     expect(body.data.bookingCode).toMatch(/^LET-[A-F0-9]+$/);
     const list = await app.fetch(new Request(`http://localhost/api/bookings?date=${date}`));
     expect(((await list.json()) as {data:{busyTimes:string[]}}).data.busyTimes).toContain("11:00");
+  });
+
+  it("blocks only new bookings when manually closed and preserves existing reservations", async () => {
+    const date = futureDate(23);
+    const existing = await app.fetch(new Request("http://localhost/api/bookings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerName: "Existing Client", customerEmail: "existing@example.com", customerPhone: "51999999999", bookingDate: date, bookingTime: "11:00", service: "Pés tradicional" }) }));
+    expect(existing.status).toBe(201);
+    const existingBody = await existing.json() as { data: { id: string } };
+    const admin = await signUpAndGetToken(app, { email: "salon-settings-admin@example.com" });
+    if (!admin.userId) throw new Error("Admin fixture did not return a user id");
+    await executeSql("UPDATE user SET role='admin' WHERE id=?", [admin.userId]);
+    const closed = await fetchWithAuth(app, admin.token, "/api/salon-settings", { method: "PATCH", body: JSON.stringify({ isOpen: false, openingTime: "09:00", closingTime: "18:00" }) });
+    expect(closed.status).toBe(200);
+    const closedPayload = await closed.json() as { data: { isOpen: boolean; openingTime: string; closingTime: string } };
+    expect(closedPayload.data).toMatchObject({ isOpen: false, openingTime: "09:00", closingTime: "18:00" });
+    const rejectedNew = await app.fetch(new Request("http://localhost/api/bookings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerName: "New Client", customerEmail: "new@example.com", customerPhone: "51999999999", bookingDate: futureDate(24), bookingTime: "11:00", service: "Pés tradicional" }) }));
+    expect(rejectedNew.status).toBe(409);
+    const stored = await executeSql("SELECT status FROM bookings WHERE id=?", [existingBody.data.id]);
+    expect(stored.rows[0]?.status).toBe("pending");
+    const reopened = await fetchWithAuth(app, admin.token, "/api/salon-settings", { method: "PATCH", body: JSON.stringify({ isOpen: true }) });
+    expect(reopened.status).toBe(200);
+    const acceptedAfterOpening = await app.fetch(new Request("http://localhost/api/bookings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerName: "New Client", customerEmail: "new@example.com", customerPhone: "51999999999", bookingDate: futureDate(24), bookingTime: "11:00", service: "Pés tradicional" }) }));
+    expect(acceptedAfterOpening.status).toBe(201);
   });
   it("blocks duplicate slots using valid customer details", async () => {
     const date = futureDate(21);
