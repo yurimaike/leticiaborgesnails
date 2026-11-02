@@ -11,9 +11,9 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
   ensureDateTime(input.bookingDate,input.bookingTime);
   const settings = await executeSql("SELECT is_open, opening_time, closing_time FROM salon_settings WHERE id=1 LIMIT 1");
   const salon = settings.rows[0];
-  if (!salon || Number(salon.is_open) !== 1) throw new DatabaseError("SALON_CLOSED", "O salão está fechado no momento e não está recebendo novos agendamentos.", 409);
-  const openingTime = String(salon.opening_time);
-  const closingTime = String(salon.closing_time);
+  if (salon && Number(salon.is_open) !== 1) throw new DatabaseError("SALON_CLOSED", "O salão está fechado no momento e não está recebendo novos agendamentos.", 409);
+  const openingTime = salon ? String(salon.opening_time) : "08:00";
+  const closingTime = salon ? String(salon.closing_time) : "19:00";
   if (input.bookingTime < openingTime || input.bookingTime >= closingTime) throw new DatabaseError("OUTSIDE_OPENING_HOURS", `Escolha um horário entre ${openingTime} e ${closingTime}.`, 400);
   const services = Array.isArray(input.service) ? input.service : [input.service];
   if(!BOOKING_TIMES.includes(input.bookingTime)||services.length<1||services.length>4||new Set(services).size!==services.length) throw new DatabaseError("INVALID_INPUT","Escolha de 1 a 4 serviços válidos, sem repetir.",400);
