@@ -3,18 +3,18 @@ import { DatabaseError, executeSql } from "../_core/db";
 
 export const BOOKING_TIMES = ["08:00", "09:30", "11:00", "13:00", "14:30", "16:00", "17:30", "19:00"] as const;
 export const BOOKING_SERVICES = ["Manicure e pedicure", "Esmaltação em gel", "Banho de gel", "Manutenção"] as const;
-export type BookingInput = { customerName:string; customerEmail:string; customerPhone:string; bookingDate:string; bookingTime:typeof BOOKING_TIMES[number]; service:typeof BOOKING_SERVICES[number] };
+export type BookingInput = { customerName:string; customerEmail:string; customerPhone:string; bookingDate:string; bookingTime:typeof BOOKING_TIMES[number]; service:typeof BOOKING_SERVICES[number][] };
 function validDate(s:string) { if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false; const d=new Date(`${s}T12:00:00`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0,10)===s; }
 function ensureDateTime(date:string,time:string) { if(!validDate(date)) throw new DatabaseError("INVALID_INPUT","Data inválida.",400); const target=new Date(`${date}T${time}:00-03:00`); if(target.getTime()<=Date.now()) throw new DatabaseError("INVALID_INPUT","Escolha uma data e horário futuros.",400); }
 export async function listBusyTimes(date:string) { if(!validDate(date)) throw new DatabaseError("INVALID_INPUT","Data inválida.",400); const r=await executeSql("SELECT bookingTime FROM bookings WHERE bookingDate = ? AND status IN ('pending','confirmed')",[date]); return r.rows.map(x=>String(x.bookingTime)); }
 export async function createBooking(input:BookingInput, verifiedUser?:{id:string;email:string}) {
   ensureDateTime(input.bookingDate,input.bookingTime);
-  if(!BOOKING_TIMES.includes(input.bookingTime)||!BOOKING_SERVICES.includes(input.service)) throw new DatabaseError("INVALID_INPUT","Serviço ou horário inválido.",400);
+  if(!BOOKING_TIMES.includes(input.bookingTime)||!Array.isArray(input.service)||input.service.length<1||input.service.length>4||new Set(input.service).size!==input.service.length||input.service.some(service=>!BOOKING_SERVICES.includes(service))) throw new DatabaseError("INVALID_INPUT","Escolha de 1 a 4 serviços válidos, sem repetir.",400);
   const name=input.customerName.trim(); const email=input.customerEmail.trim().toLowerCase(); const phone=input.customerPhone.replace(/\D/g,"");
   if(name.length<2||name.length>120||!/^\S+@\S+\.\S+$/.test(email)||phone.length<10||phone.length>13) throw new DatabaseError("INVALID_INPUT","Confira nome, e-mail e WhatsApp.",400);
-  const id=randomUUID(); const bookingCode=`LET-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const serviceList=input.service.join(", ");\n  const id=randomUUID(); const bookingCode=`LET-${randomBytes(4).toString("hex").toUpperCase()}`;
   const userId = verifiedUser && verifiedUser.email.toLowerCase() === email ? verifiedUser.id : null;
-  try { await executeSql("INSERT INTO bookings (id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,userId) VALUES (?,?,?,?,?,?,?,?, 'pending',?)",[id,bookingCode,name,email,phone,input.bookingDate,input.bookingTime,input.service,userId]); }
+  try { await executeSql("INSERT INTO bookings (id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,userId) VALUES (?,?,?,?,?,?,?,?, 'pending',?)",[id,bookingCode,name,email,phone,input.bookingDate,input.bookingTime,serviceList,userId]); }
   catch(e) {
     if (e instanceof DatabaseError && e.code === "SLOT_UNAVAILABLE") throw e;
     const msg = e instanceof DatabaseError ? e.databaseMessage : e instanceof Error ? e.message : "";
@@ -23,7 +23,7 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
     }
     throw e;
   }
-  return { id, bookingCode, customerName:name, customerEmail:email, customerPhone:phone, bookingDate:input.bookingDate, bookingTime:input.bookingTime, service:input.service, status:"pending" as const };
+  return { id, bookingCode, customerName:name, customerEmail:email, customerPhone:phone, bookingDate:input.bookingDate, bookingTime:input.bookingTime, service:serviceList, status:"pending" as const };
 }
 export async function listBookings() { const r=await executeSql("SELECT id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,createdAt,updatedAt,decidedAt,decisionNote,paymentStatus,paymentUpdatedAt,completedAt FROM bookings ORDER BY bookingDate DESC, bookingTime DESC"); return r.rows; }
 export async function listCustomerBookings(userId:string, verifiedEmail:string) {
