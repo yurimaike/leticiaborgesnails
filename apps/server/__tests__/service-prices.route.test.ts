@@ -22,20 +22,20 @@ describe("service prices route", () => {
     const regular = await signUpAndGetToken(app, { email: "prices-customer@example.com" });
     const denied = await fetchWithAuth(app, regular.token, "/api/service-prices", {
       method: "PATCH",
-      body: JSON.stringify({ serviceName: "Banho de gel", priceCents: 100 })
+      body: JSON.stringify({ serviceName: "Pés tradicional", priceCents: 100 })
     });
     expect(denied.status).toBe(403);
 
     await executeSql("UPDATE user SET role='admin' WHERE id=?", [regular.userId]);
     const saved = await fetchWithAuth(app, regular.token, "/api/service-prices", {
       method: "PATCH",
-      body: JSON.stringify({ serviceName: "Banho de gel", priceCents: 100 })
+      body: JSON.stringify({ serviceName: "Pés tradicional", priceCents: 100 })
     });
     expect(saved.status).toBe(200);
 
     const listed = await app.fetch(new Request("http://localhost/api/service-prices"));
     const payload = await listed.json() as { data: { services: Array<{ serviceName: string; priceCents: number | null }> } };
-    expect(payload.data.services.find(item => item.serviceName === "Banho de gel")?.priceCents).toBe(100);
+    expect(payload.data.services.find(item => item.serviceName === "Pés tradicional")?.priceCents).toBe(100);
   });
 
   it("rejects values below R$ 1.00", async () => {
@@ -43,7 +43,7 @@ describe("service prices route", () => {
     await executeSql("UPDATE user SET role='admin' WHERE id=?", [admin.userId]);
     const response = await fetchWithAuth(app, admin.token, "/api/service-prices", {
       method: "PATCH",
-      body: JSON.stringify({ serviceName: "Manicure e pedicure", priceCents: 99 })
+      body: JSON.stringify({ serviceName: "Mãos tradicional", priceCents: 99 })
     });
     expect(response.status).toBe(400);
   });
