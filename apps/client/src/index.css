@@ -764,3 +764,42 @@ h1, h2, h3, p { margin-top: 0; }
     bottom: 16px;
   }
 }
+
+
+.floating-stamp-wrap { position: absolute; z-index: 3; left: -33px; bottom: 92px; }
+.floating-stamp-wrap .floating-stamp {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  font: inherit;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.floating-stamp-wrap .floating-stamp:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(75,48,39,.13); }
+.floating-stamp-wrap .floating-stamp:focus-visible { outline: 2px solid var(--rose); outline-offset: 4px; }
+.heart-burst { position: absolute; left: 50%; top: 50%; width: 1px; height: 1px; pointer-events: none; }
+.burst-heart { position: absolute; left: 0; top: 0; color: #c98291; font-size: 18px; line-height: 1; opacity: 0; animation: stamp-heart-fly 850ms cubic-bezier(.16,.72,.28,1) forwards; filter: drop-shadow(0 2px 3px rgba(118,84,63,.12)); }
+.burst-heart-1 { --heart-x: -44px; --heart-y: -48px; --heart-r: -18deg; }
+.burst-heart-2 { --heart-x: -22px; --heart-y: -68px; --heart-r: 12deg; animation-delay: 25ms; }
+.burst-heart-3 { --heart-x: 4px; --heart-y: -76px; --heart-r: -8deg; animation-delay: 50ms; }
+.burst-heart-4 { --heart-x: 31px; --heart-y: -60px; --heart-r: 22deg; animation-delay: 15ms; }
+.burst-heart-5 { --heart-x: 48px; --heart-y: -35px; --heart-r: -14deg; animation-delay: 45ms; }
+.burst-heart-6 { --heart-x: -49px; --heart-y: -15px; --heart-r: 16deg; animation-delay: 60ms; }
+.burst-heart-7 { --heart-x: 43px; --heart-y: -8px; --heart-r: -24deg; animation-delay: 35ms; }
+.burst-heart-8 { --heart-x: -28px; --heart-y: 13px; --heart-r: 8deg; animation-delay: 70ms; }
+.burst-heart-9 { --heart-x: 20px; --heart-y: 17px; --heart-r: -10deg; animation-delay: 20ms; }
+@keyframes stamp-heart-fly {
+  0% { transform: translate(0, 0) rotate(0) scale(.45); opacity: 0; }
+  18% { opacity: .95; transform: translate(calc(var(--heart-x) * .35), calc(var(--heart-y) * .35)) rotate(var(--heart-r)) scale(1); }
+  100% { transform: translate(var(--heart-x), var(--heart-y)) rotate(var(--heart-r)) scale(.72); opacity: 0; }
+}
+@media (max-width: 768px) {
+  .floating-stamp-wrap { left: -1px; bottom: 47px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floating-stamp-wrap .floating-stamp { transition: none; }
+  .burst-heart { animation-duration: 1ms; }
+}
