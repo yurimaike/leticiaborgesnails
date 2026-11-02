@@ -44,7 +44,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { data: session, isPending, refetch: refetchSession } = authClient.useSession();
 
-  const mode = "signin" as const;
+  const mode: "signin" | "signup" = "signin";
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setSenha] = useState("");
