@@ -48,7 +48,7 @@ bookingsRouter.get("/guest-access/:bookingCode",publicRoute,guestBookingCodeLimi
     const enabled=Boolean(settings.rows[0]?.enabled);
     const completedPaid=Number(progress.rows[0]?.completedPaid??0);
     return c.json(apiSuccess({
-      booking:{bookingCode:String(booking.bookingCode),bookingDate:String(booking.bookingDate),bookingTime:String(booking.bookingTime),service:String(booking.service),status:String(booking.status),paymentStatus:String(booking.paymentStatus),completedAt:booking.completedAt??null},
+      booking:{id:String(booking.id),bookingCode:String(booking.bookingCode),bookingDate:String(booking.bookingDate),bookingTime:String(booking.bookingTime),service:String(booking.service),status:String(booking.status),paymentStatus:String(booking.paymentStatus),completedAt:booking.completedAt??null},
       loyalty:{enabled,completedPaid,bookingsUntilReward:enabled?8-(completedPaid%8):null,rewards:rewards.rows}
     }));
   }catch(e){return fail(e,c);}
