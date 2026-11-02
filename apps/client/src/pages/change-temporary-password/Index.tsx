@@ -48,7 +48,7 @@ export default function ChangeTemporaryPasswordPage() {
       <main className="min-h-[70vh] bg-[#fbf5ed] px-4 py-12">
         <section className="mx-auto max-w-lg rounded-3xl border border-[#e8d9cb] bg-white p-6 shadow-sm sm:p-8">
           <h1 className="font-serif text-3xl text-[#493629]">Crie sua nova senha</h1>
-          <p className="mt-3 text-sm leading-6 text-[#806c5d]">Esta conta foi criada pela administração com uma senha temporária. Por segurança, altere-a agora para continuar.</p>
+          <p className="mt-3 text-sm leading-6 text-[#806c5d]">Esta conta recebeu uma senha temporária da administração. Por segurança, altere-a agora para continuar.</p>
           <form onSubmit={submit} className="mt-6 grid gap-4">
             <label className="grid gap-2 text-sm font-medium text-[#705844]">Senha temporária atual
               <input type="password" autoComplete="current-password" required value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} className="rounded-xl border border-[#dfcdbd] px-4 py-3 text-[#493629]" />
