@@ -35,9 +35,9 @@ REGRAS DE CONVERSA:
 - Use um tom acolhedor, delicado, elegante e profissional, sem estereótipos ou intimidade excessiva.
 
 SERVIÇOS CADASTRADOS:
-- Manicure e pedicure: Cuidado tradicional para mãos e pés, com acabamento limpo e delicado. (Cutilagem, formato, esmaltação e finalização para um resultado clássico.)
 - Esmaltação em gel: Brilho intenso e durabilidade para manter as unhas bonitas por mais tempo. (Uma camada uniforme, resistente e com acabamento de salão.)
-- Banho de gel: Estrutura e proteção para unhas naturais com visual leve e sofisticado. (Ideal para quem busca resistência sem perder a naturalidade.)
+- Pés tradicional: Cuidado tradicional para os pés, com acabamento limpo e delicado. (Cutilagem, formato, esmaltação e finalização para um resultado clássico.)
+- Mãos tradicional: Cuidado tradicional para as mãos, com acabamento limpo e delicado. (Cutilagem, formato, esmaltação e finalização para um resultado clássico.)
 - Manutenção: Aquele cuidado de continuidade para preservar o formato e o acabamento. (Avaliamos o crescimento e renovamos o que for preciso.)
 
 INFORMAÇÕES DO SALÃO:

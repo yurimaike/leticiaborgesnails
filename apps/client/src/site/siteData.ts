@@ -13,22 +13,22 @@ export type Service = {
 
 export const services: Service[] = [
   {
-    name: "Manicure e pedicure",
-    description: "Cuidado tradicional para mãos e pés, com acabamento limpo e delicado.",
-    detail: "Cutilagem, formato, esmaltação e finalização para um resultado clássico.",
-    mark: "M / P",
-  },
-  {
     name: "Esmaltação em gel",
     description: "Brilho intenso e durabilidade para manter as unhas bonitas por mais tempo.",
     detail: "Uma camada uniforme, resistente e com acabamento de salão.",
     mark: "GEL",
   },
   {
-    name: "Banho de gel",
-    description: "Estrutura e proteção para unhas naturais com visual leve e sofisticado.",
-    detail: "Ideal para quem busca resistência sem perder a naturalidade.",
-    mark: "BG",
+    name: "Pés tradicional",
+    description: "Cuidado tradicional para os pés, com acabamento limpo e delicado.",
+    detail: "Cutilagem, formato, esmaltação e finalização para um resultado clássico.",
+    mark: "PÉS",
+  },
+  {
+    name: "Mãos tradicional",
+    description: "Cuidado tradicional para as mãos, com acabamento limpo e delicado.",
+    detail: "Cutilagem, formato, esmaltação e finalização para um resultado clássico.",
+    mark: "MÃOS",
   },
   {
     name: "Manutenção",
