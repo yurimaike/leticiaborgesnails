@@ -146,3 +146,11 @@ export const bookings = sqliteTable(
 );
 export type Booking = typeof bookings.$inferSelect;
 export type NewBooking = typeof bookings.$inferInsert;
+
+
+export const servicePrices = sqliteTable("service_prices", {
+  serviceName: text("serviceName").primaryKey(),
+  priceCents: integer("priceCents"),
+  updatedAt: text("updatedAt").notNull().default(sql`CURRENT_TIMESTAMP`)
+});
+export type ServicePrice = typeof servicePrices.$inferSelect;
