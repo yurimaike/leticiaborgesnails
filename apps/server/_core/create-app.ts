@@ -39,6 +39,10 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
   const isPasswordChange = c.req.method === "POST" && authPath === "/api/auth/change-password";
   const isAllowedFirstLoginAuthPath =
     isPasswordChange ||
+    // Sign-in must remain reachable if this browser still carries a
+    // temporary-password session from an earlier attempt. Credentials and
+    // the email allowlist are validated below by Better Auth and this handler.
+    (c.req.method === "POST" && authPath === "/api/auth/sign-in/email") ||
     (c.req.method === "POST" && authPath === "/api/auth/sign-out") ||
     ((c.req.method === "GET" || c.req.method === "POST") && authPath === "/api/auth/get-session");
   const activeSession = await getAuth().api.getSession({ headers: c.req.raw.headers }).catch(() => null);
