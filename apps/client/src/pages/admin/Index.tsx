@@ -36,6 +36,7 @@ function AdminContent() {
   const [busy, setBusy] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [historyView, setHistoryView] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loyalty, setLoyalty] = useState<LoyaltyData>({ enabled: false, validityMonths: 12, rewards: [], customers: [] });
   const [serviceChoices] = useState(["Manicure e pedicure", "Esmaltação em gel", "Banho de gel", "Manutenção"]);
