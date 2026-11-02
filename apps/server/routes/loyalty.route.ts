@@ -4,7 +4,6 @@ import { z } from "zod";
 import { apiFailure, apiSuccess } from "@repo/shared/http";
 import { adminRoute } from "../_core/route-helpers";
 import { DatabaseError, executeSql } from "../_core/db";
-import { BOOKING_SERVICES } from "../services/bookings";
 import { bodySizeLimit } from "../middlewares/body-size-limit";
 
 export const loyaltyRouter = new Hono();
@@ -129,7 +128,8 @@ loyaltyRouter.post("/rewards/:id/redeem", adminRoute, bodySizeLimit, async (c) =
   try {
     const setting = await executeSql("SELECT enabled FROM loyalty_settings WHERE id=1");
     if (!Number(setting.rows[0]?.enabled ?? 0)) return c.json(apiFailure("LOYALTY_DISABLED", "O programa de fidelidade está desativado."), 409);
-    if (!BOOKING_SERVICES.includes(parsed.data.service as typeof BOOKING_SERVICES[number])) return c.json(apiFailure("INVALID_SERVICE", "Escolha um serviço cadastrado no salão."), 400);
+    const activeService = await executeSql("SELECT id FROM service_catalog WHERE name=? AND active=1 LIMIT 1", [parsed.data.service]);
+    if (!activeService.rows[0]) return c.json(apiFailure("INVALID_SERVICE", "Escolha um serviço activo no catálogo do salão."), 400);
     const rewardResult = await executeSql("SELECT customerEmail,status,expiresAt FROM loyalty_rewards WHERE id=?", [c.req.param("id")]);
     const reward = rewardResult.rows[0];
     if (!reward) return c.json(apiFailure("REWARD_NOT_FOUND", "Bônus não encontrado."), 404);
