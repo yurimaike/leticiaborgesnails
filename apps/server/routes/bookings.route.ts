@@ -4,7 +4,7 @@ import { apiFailure, apiSuccess } from "@repo/shared/http";
 import { DatabaseError, executeSql } from "../_core/db";
 import { adminRoute, protectedRoute, publicRoute } from "../_core/route-helpers";
 import { distributedRateLimit, identityRateLimitCounter, ipRateLimitCounter } from "../middlewares/distributed-rate-limit";
-import { BOOKING_SERVICES, BOOKING_TIMES, createBooking, decideBooking, listBookings, listBusyTimes, listCustomerBookings } from "../services/bookings";
+import { BOOKING_TIMES, createBooking, decideBooking, listBookings, listBusyTimes, listCustomerBookings } from "../services/bookings";
 import { notifyAdminsNewBooking, notifyBookingDecision } from "../services/booking-email";
 import { bodySizeLimit } from "../middlewares/body-size-limit";
 
