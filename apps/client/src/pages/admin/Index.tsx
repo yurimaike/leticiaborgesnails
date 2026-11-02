@@ -17,6 +17,7 @@ type Booking = {
   service: string;
   status: string;
   paymentStatus?: "paid" | "unpaid";
+  paymentAmountCents?: number | null;
   completedAt?: string | null;
 };
 type LoyaltyReward = { id: string; customerEmail: string; customerName: string; cycleNumber: number; status: "earned" | "redeemed"; earnedAt: string; expiresAt?: string | null; redeemedAt?: string | null; redeemedService?: string | null };
@@ -145,7 +146,7 @@ function AdminContent() {
     }
     setBusy(booking.id); setError("");
     try {
-      const response = await apiFetch(`/loyalty/bookings/${booking.id}/${endpoint}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(endpoint === "payment" ? { paid: value } : { completed: value }) });
+      const response = await apiFetch(`/loyalty/bookings/${booking.id}/${endpoint}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(endpoint === "payment" ? { paid: value, amountCents } : { completed: value }) });
       const payload = await response.json() as Payload<unknown>;
       if (!response.ok || !payload.ok) throw new Error(payload.error?.message ?? "Não foi possível atualizar.");
       if (endpoint === "payment" && value) {
@@ -162,13 +163,11 @@ function AdminContent() {
 
   function generatePaymentReceipt(booking: Booking) {
     if (booking.paymentStatus !== "paid") return;
-    const raw = window.prompt("Informe o valor recebido (R$) para o comprovante. Exemplo: 85,00");
-    if (raw === null) return;
-    const amount = Number(raw.trim().replace(",", "."));
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setError("Informe um valor válido para gerar o comprovante.");
+    if (!Number.isSafeInteger(booking.paymentAmountCents) || Number(booking.paymentAmountCents) <= 0) {
+      setError("O valor recebido não está salvo nesta reserva. Confira o pagamento novamente.");
       return;
     }
+    const amount = Number(booking.paymentAmountCents) / 100;
     const safe = (value: string) => value.replace(/[&<>"']/g, (char) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
     })[char] ?? char);
