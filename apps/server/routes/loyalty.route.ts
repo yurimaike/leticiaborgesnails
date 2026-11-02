@@ -8,7 +8,7 @@ import { BOOKING_SERVICES } from "../services/bookings";
 import { bodySizeLimit } from "../middlewares/body-size-limit";
 
 export const loyaltyRouter = new Hono();
-const paymentSchema = z.object({ paid: z.boolean() });
+const paymentSchema = z.object({ paid: z.boolean(), amountCents: z.number().int().positive().max(100_000_000).optional() }).refine(value => !value.paid || value.amountCents !== undefined);
 const completionSchema = z.object({ completed: z.boolean() });
 const settingsSchema = z.object({ enabled: z.boolean().optional(), validityMonths: z.number().int().min(1).max(60).optional() }).refine((value) => value.enabled !== undefined || value.validityMonths !== undefined);
 const validitySchema = z.object({ months: z.number().int().min(1).max(60) });
@@ -51,8 +51,8 @@ loyaltyRouter.patch("/bookings/:id/payment", adminRoute, bodySizeLimit, async (c
   if (!parsed.success) return c.json(apiFailure("INVALID_INPUT", "Informe se o pagamento foi recebido."), 400);
   try {
     const result = await executeSql(
-      "UPDATE bookings SET paymentStatus=?, paymentUpdatedAt=CURRENT_TIMESTAMP, updatedAt=CURRENT_TIMESTAMP WHERE id=? AND status NOT IN ('rejected','cancelled')",
-      [parsed.data.paid ? "paid" : "unpaid", c.req.param("id")]
+      "UPDATE bookings SET paymentStatus=?, paymentAmountCents=?, paymentUpdatedAt=CURRENT_TIMESTAMP, updatedAt=CURRENT_TIMESTAMP WHERE id=? AND status NOT IN ('rejected','cancelled')",
+      [parsed.data.paid ? "paid" : "unpaid", parsed.data.paid ? parsed.data.amountCents : null, c.req.param("id")]
     );
     if (Number(result.rowsAffected) !== 1) return c.json(apiFailure("BOOKING_NOT_FOUND", "Reserva não encontrada ou cancelada."), 404);
     const booking = await executeSql("SELECT customerEmail,customerName FROM bookings WHERE id=?", [c.req.param("id")]);
