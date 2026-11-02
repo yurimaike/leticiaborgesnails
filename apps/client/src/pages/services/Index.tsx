@@ -1,9 +1,16 @@
+import { useEffect, useState } from "react";
 import { ArrowUpRight, Check, Heart, Sparkles } from "lucide-react";
+import { apiFetch } from "@/lib/api";
 import { Link } from "react-router-dom";
 import SiteLayout from "../../site/SiteLayout";
 import { services } from "../../site/siteData";
 
+type PricePayload = { ok: boolean; data?: { services: Array<{ serviceName: string; priceCents: number | null }> } };
+function money(cents: number) { return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
+
 export default function ServicesPage() {
+  const [prices, setPrices] = useState<Record<string, number | null>>({});
+  useEffect(() => { let active = true; apiFetch("/service-prices", { auth: false, silent: true }).then(async response => { const payload = await response.json() as PricePayload; if (response.ok && payload.ok && active) setPrices(Object.fromEntries((payload.data?.services ?? []).map(item => [item.serviceName, item.priceCents]))); }).catch(() => undefined); return () => { active = false; }; }, []);
   return (
     <SiteLayout
       title="Serviços | Nail Designer Leticia"
@@ -13,7 +20,7 @@ export default function ServicesPage() {
         <section className="page-intro section-shell">
           <p className="eyebrow"><span className="eyebrow-dot" /> Serviços</p>
           <h1>Pequenos detalhes,<br /><em>grande diferença.</em></h1>
-          <p>Escolha o cuidado que combina com você. Os valores são informados diretamente no WhatsApp, de acordo com o serviço e a avaliação.</p>
+          <p>Escolha o cuidado que combina com você. Consulte os valores actualizados de cada serviço. A equipe pode ajustar os preços pelo painel administrativo.</p>
         </section>
         <section className="section-shell service-list">
           {services.map((service, index) => (
@@ -24,6 +31,7 @@ export default function ServicesPage() {
                 <h2>{service.name}</h2>
                 <p>{service.description}</p>
                 <span><Check size={15} /> {service.detail}</span>
+                <strong className="mt-3 block text-sm text-[#705844]">{prices[service.name] == null ? "Valor ainda não informado" : money(prices[service.name]!)}</strong>
               </div>
               <Link className="round-arrow" to="/agenda" aria-label={`Agendar ${service.name}`}><ArrowUpRight size={20} /></Link>
             </article>
