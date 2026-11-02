@@ -77,6 +77,29 @@ describe("admin finance route", () => {
     expect(JSON.parse(String(audit.rows[0].newValues))).toMatchObject({ amountCents: 10000, description: "mesa" });
   });
 
+  it("rolls back the expense update when the audit insert fails", async () => {
+    const admin = await createAdmin("finance-admin-atomic@example.com");
+    const created = await fetchWithAuth(app, admin.token, "/api/finance/expenses", {
+      method: "POST",
+      body: JSON.stringify({ amountCents: 12000, category: "Materiais", description: "Original", transactionDate: "2026-11-01" })
+    });
+    const createdBody = await created.json() as { data: { id: string } };
+    await executeSql("CREATE TRIGGER fail_finance_audit_insert BEFORE INSERT ON finance_transaction_audit BEGIN SELECT RAISE(ABORT, 'audit unavailable'); END");
+    try {
+      const response = await fetchWithAuth(app, admin.token, "/api/finance/" + createdBody.data.id, {
+        method: "PATCH",
+        body: JSON.stringify({ amountCents: 9000, category: "Materiais", description: "Alterado", transactionDate: "2026-11-02" })
+      });
+      expect(response.status).not.toBe(200);
+      const row = await executeSql("SELECT amountCents,description,transactionDate FROM finance_transactions WHERE id=?", [createdBody.data.id]);
+      expect(row.rows[0]).toMatchObject({ amountCents: 12000, description: "Original", transactionDate: "2026-11-01" });
+      const audit = await executeSql("SELECT id FROM finance_transaction_audit WHERE transactionId=?", [createdBody.data.id]);
+      expect(audit.rows).toHaveLength(0);
+    } finally {
+      await executeSql("DROP TRIGGER IF EXISTS fail_finance_audit_insert");
+    }
+  });
+
   it("does not allow customers to edit finance transactions", async () => {
     const admin = await createAdmin("finance-admin-edit-auth@example.com");
     const customer = await signUpAndGetToken(app, { email: "finance-customer-edit@example.com" });
