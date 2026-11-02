@@ -103,6 +103,15 @@ const AuthPage = () => {
         return;
       }
 
+      const statusResponse = await apiFetch("/account/first-login-status", { silent: true });
+      if (!statusResponse.ok) throw new Error("Não foi possível verificar a situação da senha.");
+      const statusPayload = await statusResponse.json() as { ok: boolean; data?: { mustChangePassword?: boolean } };
+      if (statusPayload.data?.mustChangePassword) {
+        toast.success("Entre com sua nova senha para concluir o primeiro acesso.");
+        navigate("/trocar-senha", { replace: true });
+        return;
+      }
+
       toast.success("Signed in");
       // (3) Navigate via the router. Do NOT window.location.reload().
       navigate("/", { replace: true });
