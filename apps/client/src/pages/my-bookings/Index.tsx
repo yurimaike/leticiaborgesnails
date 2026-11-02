@@ -58,6 +58,9 @@ export default function MyBookingsPage() {
     setLoading(true); setError(""); setNotice(""); setGuestBooking(null); setGuestLoyalty(undefined);
     try {
       const code = bookingCode.trim().toUpperCase();
+      if (!/^LET-[A-F0-9]{8}$/.test(code)) {
+        throw new Error("Formato inválido. Use LET- seguido de 8 caracteres: números de 0 a 9 ou letras de A a F. Exemplo: LET-AB12CD34.");
+      }
       const response = await apiFetch(`/bookings/guest-access/${encodeURIComponent(code)}`, { auth: false, silent: true });
       const payload = await response.json() as ApiPayload;
       if (!response.ok || !payload.ok || !payload.data?.booking) throw new Error(payload.error?.message ?? "Não foi possível localizar a reserva.");
@@ -82,7 +85,8 @@ export default function MyBookingsPage() {
               <h2 className="font-display text-2xl">Consultar reserva</h2>
               <form className="mt-6 grid gap-4" onSubmit={lookupGuest}>
                 <label className="grid gap-2 text-sm font-medium" htmlFor="booking-access-code">Código da reserva</label>
-                <input id="booking-access-code" className="min-h-12 w-full min-w-0 rounded-xl border border-input bg-background px-4 font-mono uppercase tracking-wider" autoComplete="off" placeholder="LET-XXXXXXXX" required minLength={12} maxLength={12} pattern="LET-[A-Fa-f0-9]{8}" value={bookingCode} onChange={event => { const entered = event.target.value.toUpperCase().replace(/^LET-?/, ""); const suffix = entered.replace(/[^A-F0-9]/g, "").slice(0, 8); setBookingCode(`LET-${suffix}`); }} />
+                <input id="booking-access-code" className="min-h-12 w-full min-w-0 rounded-xl border border-input bg-background px-4 font-mono uppercase tracking-wider" autoComplete="off" placeholder="LET-AB12CD34" aria-describedby="booking-code-format" required minLength={12} maxLength={12} pattern="LET-[A-F0-9]{8}" title="Use LET- seguido de 8 caracteres: números de 0 a 9 ou letras de A a F." value={bookingCode} onChange={event => { const entered = event.target.value.toUpperCase().replace(/^LET-?/, ""); const suffix = entered.replace(/[^A-F0-9]/g, "").slice(0, 8); setBookingCode(`LET-${suffix}`); }} />
+                <p id="booking-code-format" className="text-xs text-muted-foreground">Formato obrigatório: LET- + 8 caracteres (0–9 ou A–F). Exemplo: <strong>LET-AB12CD34</strong>. O prefixo LET- já está preenchido; digite os 8 caracteres restantes.</p>
                 <button className="min-h-12 w-fit rounded-full bg-primary px-6 text-primary-foreground disabled:opacity-60" type="submit" disabled={loading}>{loading ? "Consultando…" : "Consultar reserva"}</button>
               </form>
               {!session?.user && <p className="mt-5 text-sm text-muted-foreground">Também pode <Link className="text-primary underline" to="/auth">entrar ou criar uma conta</Link>.</p>}
