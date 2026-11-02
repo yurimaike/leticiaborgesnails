@@ -46,19 +46,17 @@ const Index = () => {
                 width="620"
                 height="720"
               />
-              <div className="hero-image-caption">
-                <div>
-                  <span className="caption-kicker">Agenda aberta</span>
-                  <strong>Reserve seu horário</strong>
-                </div>
-                <Link to="/agenda" aria-label="Abrir agenda">
-                  <ArrowUpRight size={18} />
-                </Link>
-              </div>
             </div>
             <div className="floating-stamp">
               <Heart size={16} fill="currentColor" />
               <span>feito com cuidado</span>
+            </div>
+            <div className="hero-booking-link">
+              <Link className="button button-primary" to="/agenda">
+                <CalendarDays size={18} />
+                Reserve seu horário
+                <ArrowUpRight size={17} />
+              </Link>
             </div>
           </div>
         </section>
