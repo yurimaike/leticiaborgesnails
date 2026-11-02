@@ -53,11 +53,12 @@ emailAuthorizationsRouter.post("/provision", adminRoute, limit, bodySizeLimit, a
     [email, c.var.currentUser.id, Math.floor(Date.now() / 1000)]
   );
 
+  let userId: string | null = null;
   try {
     const created = await getAuth().api.signUpEmail({
       body: { name, email, password: temporaryPassword }
     });
-    const userId = created.user?.id;
+    userId = created.user?.id ?? null;
     if (!userId) {
       throw new Error("Better Auth did not return the created user id");
     }
@@ -73,6 +74,13 @@ emailAuthorizationsRouter.post("/provision", adminRoute, limit, bodySizeLimit, a
       mustChangePassword: true
     }), 201);
   } catch {
+    // If account creation succeeded but the first-login flag could not be saved,
+    // remove the incomplete account rather than leave it with an active password.
+    if (userId) {
+      await executeSql("DELETE FROM session WHERE userId = ?", [userId]).catch(() => undefined);
+      await executeSql("DELETE FROM account WHERE userId = ?", [userId]).catch(() => undefined);
+      await executeSql("DELETE FROM user WHERE id = ?", [userId]).catch(() => undefined);
+    }
     return c.json(apiFailure("ACCOUNT_PROVISION_FAILED", "Não foi possível criar a conta. Verifique se o e-mail já está cadastrado e tente novamente."), 409);
   }
 });
