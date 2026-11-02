@@ -22,7 +22,6 @@ const adminWriteLimit = distributedRateLimit((c) => [
 ]);
 const createSchema=z.object({customerName:z.string().trim().min(2).max(120),customerEmail:z.string().email().max(254),customerPhone:z.string().min(10).max(20),bookingDate:z.string(),bookingTime:z.enum(BOOKING_TIMES),service:z.enum(BOOKING_SERVICES)});
 const decisionSchema=z.object({action:z.enum(["confirmed","rejected","cancelled"]),note:z.string().max(500).optional()});
-const guestAccessSchema=z.object({email:z.string().trim().email().max(254),code:z.string().regex(/^\d{6}$/).optional()});
 function parsedBody(c:Context){const raw=c.get("rawBody") as Uint8Array|undefined;if(!raw)return null;try{return JSON.parse(new TextDecoder().decode(raw)) as unknown;}catch{return null;}}
 function fail(error:unknown,c:Context){if(error instanceof DatabaseError)return c.json(apiFailure(error.code,error.message),error.status as 400|403|404|409|502|503);throw error;}
 const lookup=async(c:Context)=>{const date=c.req.query("date");if(!date)return c.json(apiFailure("INVALID_INPUT","Informe a data AAAA-MM-DD."),400);try{return c.json(apiSuccess({date,busyTimes:await listBusyTimes(date)}));}catch(e){return fail(e,c);}};
