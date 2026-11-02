@@ -20,7 +20,8 @@ function fail(c: any, error: unknown) {
 servicePricesRouter.get("/", publicRoute, async c => {
   try {
     const result = await executeSql("SELECT serviceName,priceCents,updatedAt FROM service_prices ORDER BY serviceName");
-    const activeNames = new Set<string>(BOOKING_SERVICES);
+    const activeResult = await executeSql("SELECT name FROM service_catalog WHERE active=1");
+    const activeNames = new Set<string>(activeResult.rows.map(row => String(row.name)));
     return c.json(apiSuccess({ services: result.rows.filter(row => activeNames.has(String(row.serviceName))).map(row => ({ serviceName: String(row.serviceName), priceCents: row.priceCents == null ? null : Number(row.priceCents), updatedAt: row.updatedAt })) }));
   } catch (error) { return fail(c, error); }
 });
@@ -28,7 +29,8 @@ servicePricesRouter.get("/", publicRoute, async c => {
 servicePricesRouter.patch("/", adminRoute, bodySizeLimit, async c => {
   const parsed = updateSchema.safeParse(await c.req.json().catch(() => null));
   if (!parsed.success) return c.json(apiFailure("INVALID_INPUT", "Informe um preço válido a partir de R$ 1,00 ou deixe vazio para ocultar."), 400);
-  if (!BOOKING_SERVICES.includes(parsed.data.serviceName as typeof BOOKING_SERVICES[number])) return c.json(apiFailure("INVALID_SERVICE", "Serviço não encontrado."), 404);
+  const active = await executeSql("SELECT id FROM service_catalog WHERE name=? AND active=1 LIMIT 1", [parsed.data.serviceName]);
+  if (!active.rows[0]) return c.json(apiFailure("INVALID_SERVICE", "Serviço não encontrado ou está oculto."), 404);
   try {
     const result = await executeSql("UPDATE service_prices SET priceCents=?,updatedAt=CURRENT_TIMESTAMP WHERE serviceName=?", [parsed.data.priceCents, parsed.data.serviceName]);
     if (Number(result.rowsAffected) !== 1) return c.json(apiFailure("SERVICE_NOT_FOUND", "Serviço não encontrado."), 404);
