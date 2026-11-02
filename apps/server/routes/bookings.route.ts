@@ -20,7 +20,7 @@ const adminReadLimit = distributedRateLimit((c) => [
 const adminWriteLimit = distributedRateLimit((c) => [
   identityRateLimitCounter("bookings:admin-write", c.var.currentUser?.id, 30, 60)
 ]);
-const createSchema=z.object({customerName:z.string().trim().min(2).max(120),customerEmail:z.string().email().max(254),customerPhone:z.string().min(10).max(20),bookingDate:z.string(),bookingTime:z.enum(BOOKING_TIMES),service:z.array(z.enum(BOOKING_SERVICES)).min(1).max(4).refine(items=>new Set(items).size===items.length,"Selecione serviços sem repetir.")});
+const createSchema=z.object({customerName:z.string().trim().min(2).max(120),customerEmail:z.string().email().max(254),customerPhone:z.string().min(10).max(20),bookingDate:z.string(),bookingTime:z.enum(BOOKING_TIMES),service:z.union([z.enum(BOOKING_SERVICES),z.array(z.enum(BOOKING_SERVICES)).min(1).max(4).refine(items=>new Set(items).size===items.length,"Selecione serviços sem repetir.")]).transform(value=>Array.isArray(value)?value:[value])});
 const decisionSchema=z.object({action:z.enum(["confirmed","rejected","cancelled"]),note:z.string().max(500).optional()});
 function parsedBody(c:Context){const raw=c.get("rawBody") as Uint8Array|undefined;if(!raw)return null;try{return JSON.parse(new TextDecoder().decode(raw)) as unknown;}catch{return null;}}
 function fail(error:unknown,c:Context){if(error instanceof DatabaseError)return c.json(apiFailure(error.code,error.message),error.status as 400|403|404|409|502|503);throw error;}
