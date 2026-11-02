@@ -6,10 +6,14 @@ import SiteLayout from "../../site/SiteLayout";
 import { services } from "../../site/siteData";
 
 type PricePayload = { ok: boolean; data?: { services: Array<{ serviceName: string; priceCents: number | null }> } };
+type CatalogService = { id:string; name:string; description:string; detail:string; mark:string; active:boolean; sortOrder:number };
+type CatalogPayload = { ok:boolean; data?:{services:CatalogService[]} };
 function money(cents: number) { return (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }); }
 
 export default function ServicesPage() {
   const [prices, setPrices] = useState<Record<string, number | null>>({});
+  const [catalog, setCatalog] = useState(services);
+  useEffect(() => { let active = true; apiFetch("/service-catalog", { auth: false, silent: true }).then(async response => { const payload = await response.json() as CatalogPayload; if (response.ok && payload.ok && active && payload.data?.services) setCatalog(payload.data.services.map(item => ({name:item.name,description:item.description,detail:item.detail,mark:item.mark}))); }).catch(() => undefined); return () => { active = false; }; }, []);
   useEffect(() => { let active = true; apiFetch("/service-prices", { auth: false, silent: true }).then(async response => { const payload = await response.json() as PricePayload; if (response.ok && payload.ok && active) setPrices(Object.fromEntries((payload.data?.services ?? []).map(item => [item.serviceName, item.priceCents]))); }).catch(() => undefined); return () => { active = false; }; }, []);
   return (
     <SiteLayout
@@ -23,7 +27,7 @@ export default function ServicesPage() {
           <p>Escolha o cuidado que combina com você. Consulte os valores actualizados de cada serviço. A equipe pode ajustar os preços pelo painel administrativo.</p>
         </section>
         <section className="section-shell service-list">
-          {services.map((service, index) => (
+          {catalog.map((service, index) => (
             <article className="service-row" key={service.name}>
               <div className="service-row-index">0{index + 1}</div>
               <div className="service-row-mark">{service.mark}</div>
