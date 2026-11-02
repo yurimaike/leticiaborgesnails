@@ -12,7 +12,7 @@ function futureDate(days: number) {
 describe("bookings route", () => {
   it("creates pending reservation and lists the slot as busy", async () => {
     const date = futureDate(20);
-    const res = await app.fetch(new Request("http://localhost/api/bookings", { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({customerName:"Test User",customerEmail:"test@example.com",customerPhone:"51999999999",bookingDate:date,bookingTime:"11:00",service:"Banho de gel"}) }));
+    const res = await app.fetch(new Request("http://localhost/api/bookings", { method:"POST", headers:{"content-type":"application/json"}, body:JSON.stringify({customerName:"Test User",customerEmail:"test@example.com",customerPhone:"51999999999",bookingDate:date,bookingTime:"11:00",service:"Pés tradicional"}) }));
     expect(res.status).toBe(201);
     const body = await res.json() as {data:{status:string;id:string;bookingCode:string}};
     expect(body.data.status).toBe("pending");
