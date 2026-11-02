@@ -14,7 +14,7 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
   const name=input.customerName.trim(); const email=input.customerEmail.trim().toLowerCase(); const phone=input.customerPhone.replace(/\D/g,"");
   if(name.length<2||name.length>120||!/^\S+@\S+\.\S+$/.test(email)||phone.length<10||phone.length>13) throw new DatabaseError("INVALID_INPUT","Confira nome, e-mail e WhatsApp.",400);
   const serviceList=services.join(", ");
-  const id=randomUUID(); const bookingCode=`LET-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const id=randomUUID(); const bookingCode=`PET-${randomBytes(4).toString("hex").toUpperCase()}`;
   const userId = verifiedUser && verifiedUser.email.toLowerCase() === email ? verifiedUser.id : null;
   try { await executeSql("INSERT INTO bookings (id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,userId) VALUES (?,?,?,?,?,?,?,?, 'pending',?)",[id,bookingCode,name,email,phone,input.bookingDate,input.bookingTime,serviceList,userId]); }
   catch(e) {
