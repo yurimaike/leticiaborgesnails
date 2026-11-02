@@ -52,7 +52,7 @@ describe("fase 32 — autorização administrativa real no servidor", () => {
         body: JSON.stringify({
           customerName: "Cliente de teste", customerEmail: account.email,
           customerPhone: "51999990000", bookingDate: "2099-12-30",
-          bookingTime: time, service: "Manicure e pedicure"
+          bookingTime: time, service: "Mãos tradicional"
         })
       });
       expect(created.status).toBe(201);
@@ -75,7 +75,7 @@ describe("fase 32 — autorização administrativa real no servidor", () => {
       body: JSON.stringify({
         customerName: "Cliente de teste", customerEmail: "booking-fixture@example.com",
         customerPhone: "51999990000", bookingDate: "2099-12-30",
-        bookingTime: "14:30", service: "Manicure e pedicure"
+        bookingTime: "14:30", service: "Mãos tradicional"
       })
     }));
     expect(created.status).toBe(201);
