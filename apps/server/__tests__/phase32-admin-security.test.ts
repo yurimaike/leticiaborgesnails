@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import app from "../_core/create-app";
 import { executeSql } from "../_core/db";
-import { applyMigrations, fetchWithAuth, resetDatabase, signInAndGetToken, signUpAndGetToken } from "../_test/helpers";
+import { applyMigrations, fetchWithAuth, resetDatabase, signUpAndGetToken } from "../_test/helpers";
 
 beforeAll(async () => {
   // This suite may only mutate the disposable, in-memory test database.
