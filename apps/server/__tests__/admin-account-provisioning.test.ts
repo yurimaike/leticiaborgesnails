@@ -16,6 +16,7 @@ async function createAdmin() {
   const created = await getAuth().api.signUpEmail({
     body: { name: "Provision Admin", email, password: "admin-password-123" }
   });
+  if (!created.token) throw new Error("Better Auth returned no admin session token");
   await executeSql("UPDATE user SET role = 'admin' WHERE id = ?", [created.user.id]);
   return { token: created.token, userId: created.user.id };
 }
@@ -110,6 +111,7 @@ describe("administrator account provisioning", () => {
     const created = await getAuth().api.signUpEmail({
       body: { name: "Regular User", email, password: "regular-password-123" }
     });
+    if (!created.token) throw new Error("Better Auth returned no user session token");
     const response = await fetchWithAuth(app, created.token, "/api/email-authorizations/provision", {
       method: "POST",
       body: JSON.stringify({ email: "friend@example.com" })
