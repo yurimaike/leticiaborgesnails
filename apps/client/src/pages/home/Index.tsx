@@ -11,7 +11,7 @@ const Index = () => {
   return (
     <SiteLayout
       title="Nail Designer Leticia | Manicure e pedicure em Nova Tramandaí"
-      description="Manicure, pedicure, esmaltação em gel, banho de gel e manutenção com Leticia Borges em Nova Tramandaí."
+      description="Esmaltação em gel, pés tradicional, mãos tradicional e manutenção com Leticia Borges em Nova Tramandaí."
     >
       <main>
         <section className="hero-section section-shell">
