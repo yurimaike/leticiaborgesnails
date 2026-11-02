@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BookOpen, ChevronLeft, ChevronRight, CircleHelp, X } from "lucide-react";
 
-const STORAGE_KEY = "leticia-admin-guide-v1";
+const STORAGE_KEY = "leticia-admin-guide-v2";
 
 const lessons = [
   { title: "Bem-vinda ao painel", text: "Este painel reúne as ferramentas para administrar o estúdio. Use as explicações para conhecer cada área. Você pode fechar o guia e abri-lo novamente pelo botão Ajuda." },
@@ -9,12 +9,15 @@ const lessons = [
   { title: "Financeiro", text: "A área Financeiro ajuda a acompanhar receitas e despesas registradas no sistema. Confira os lançamentos e os valores antes de tomar decisões. Marcar um pagamento na reserva também pode gerar o lançamento de receita correspondente." },
   { title: "Programa de fidelidade", text: "O programa contabiliza atendimentos pagos e concluídos. A cada 8 atendimentos elegíveis, a cliente recebe um bônus. Você pode ativar ou desativar o programa, definir a validade padrão e consultar bônus disponíveis ou utilizados." },
   { title: "Validade e resgate de bônus", text: "Cada bônus disponível pode ter a validade ajustada. Para resgatar, escolha uma reserva aprovada da mesma cliente, selecione o serviço gratuito e confirme. Confira os dados antes de concluir." },
-  { title: "E-mails autorizados", text: "Aqui você cadastra os endereços de pessoas autorizadas a criar conta e acessar áreas internas. Remover uma autorização encerra o acesso administrativo/autenticado daquela pessoa, mas não apaga a conta nem impede reservas públicas." },
+  { title: "E-mails autorizados: funcionários e familiares", text: "Use esta área para dar acesso individual a uma funcionária, familiar ou outra pessoa de confiança que realmente precise entrar no painel. Digite o e-mail correto e autorize. Não use um único e-mail compartilhado por várias pessoas: cada pessoa deve ter seu próprio acesso para que você consiga controlar e remover permissões individualmente." },
+  { title: "Primeiro acesso e senha temporária", text: "Depois de autorizar um novo acesso, o fluxo de criação deverá fornecer uma senha temporária para você copiar e enviar em particular à pessoa. Oriente-a a entrar com o e-mail autorizado e essa senha e, no primeiro acesso, criar uma senha própria e segura. Não envie a senha em grupos nem a deixe anotada em locais públicos. A senha temporária deve ser usada apenas para o primeiro acesso." },
+  { title: "Esqueceu a senha? Gere outra temporária", text: "Se uma funcionária ou familiar esquecer a senha, localize o e-mail dela na lista de E-mails autorizados e use a opção para gerar uma nova senha temporária. Copie e envie a nova senha em particular. A senha anterior deixa de funcionar e a pessoa precisará escolher uma nova senha ao entrar. Se a senha temporária for exibida apenas uma vez e você não a copiou, gere outra; não existe recuperação de senha antiga." },
+  { title: "Quando alguém sair da equipe ou perder o acesso", text: "Se a pessoa não trabalha mais no estúdio ou não deve mais acessar o painel, remova o e-mail da lista de autorizados. Isso bloqueia o acesso às áreas internas e encerra as sessões existentes. A remoção da autorização não apaga automaticamente reservas ou outros registos do sistema. Confira o e-mail antes de remover." },
   { title: "Reservas recebidas", text: "Cada cartão mostra cliente, código, data, horário, serviço e contactos. Uma reserva pendente pode ser aprovada ou rejeitada. Uma reserva aprovada pode ser cancelada. Confira os dados antes de alterar o estado." },
   { title: "Pagamento e atendimento", text: "Use Confirmar pagamento somente depois de receber o valor. Informe o valor realmente recebido. Depois, o sistema tenta lançar a receita no Financeiro. Marque o atendimento como concluído somente quando o serviço tiver sido realizado e o pagamento estiver recebido." },
   { title: "Comprovante", text: "Quando o pagamento estiver marcado como recebido e houver valor salvo, use Gerar comprovante PDF. O documento é um comprovante de recebimento e não substitui uma nota fiscal." },
   { title: "Agenda atual e histórico", text: "Agenda atual mostra reservas em andamento. Histórico reúne reservas rejeitadas, canceladas ou atendimentos concluídos. Use os filtros de data e estado para localizar um registo." },
-  { title: "Privacidade e segurança", text: "Os dados de clientes são privados. Não partilhe palavras-passe nem autorize e-mails desconhecidos. Antes de remover acessos, cancelar reservas ou alterar pagamentos, confirme cuidadosamente a operação." },
+  { title: "Privacidade e segurança", text: "Conceda acesso somente a pessoas de confiança e apenas pelo e-mail individual delas. Nunca peça que compartilhem a própria senha. Envie senhas temporárias em conversa privada, confirme a identidade da pessoa por outro meio antes de gerar uma nova senha e remova acessos que não sejam mais necessários. Antes de cancelar reservas ou alterar pagamentos, confira os dados." },
   { title: "Guia concluído", text: "Pronto! Você já conhece as principais áreas do painel. O guia não aparecerá automaticamente nas próximas visitas neste navegador. Para rever qualquer explicação, clique em Ajuda." }
 ];
 
