@@ -1,11 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth";
 import SiteLayout from "../../site/SiteLayout";
 
 export default function ChangeTemporaryPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnToAdmin = (location.state as { returnToAdmin?: boolean } | null)?.returnToAdmin === true;
   const { data: session, isPending, refetch } = authClient.useSession();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -35,7 +37,7 @@ export default function ChangeTemporaryPasswordPage() {
       if (result.error) throw new Error(result.error.message ?? "Não foi possível alterar a senha.");
       await refetch();
       toast.success("Senha alterada. Seu acesso foi liberado.");
-      navigate("/", { replace: true });
+      navigate(returnToAdmin ? "/admin" : "/", { replace: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao alterar a senha.");
     } finally {
