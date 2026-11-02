@@ -306,8 +306,8 @@ function AdminContent() {
                   className="w-full rounded-xl border border-[#dfcdbd] bg-white px-3 py-2.5 text-sm text-[#493629] outline-none focus:border-[#a77d60] focus:ring-2 focus:ring-[#a77d60]/15"
                 >
                   <option value="all">Todos os estados</option>
-                  <option value="pending">Pendentes</option>
-                  <option value="confirmed">Aprovadas</option>
+                  {!historyView && <option value="pending">Pendentes</option>}
+                  {!historyView && <option value="confirmed">Aprovadas</option>}{historyView && <option value="completed">Concluídas</option>}
                   <option value="rejected">Rejeitadas</option>
                   <option value="cancelled">Canceladas</option>
                 </select>
