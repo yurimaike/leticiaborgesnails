@@ -85,7 +85,7 @@ describe("admin email authorizations", () => {
         customerPhone: "51999999999",
         bookingDate,
         bookingTime: "11:00",
-        service: "Manicure e pedicure"
+        service: "Mãos tradicional"
       })
     }));
     expect(customerBooking.status).toBe(201);
@@ -126,7 +126,7 @@ describe("admin email authorizations", () => {
         customerPhone: "51999999999",
         bookingDate,
         bookingTime: "19:00",
-        service: "Manicure e pedicure"
+        service: "Mãos tradicional"
       })
     }));
     expect(booking.status).toBe(201);
