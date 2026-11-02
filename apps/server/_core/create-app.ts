@@ -40,7 +40,7 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
   const isAllowedFirstLoginAuthPath =
     isPasswordChange ||
     (c.req.method === "POST" && authPath === "/api/auth/sign-out") ||
-    (c.req.method === "GET" && authPath === "/api/auth/get-session");
+    ((c.req.method === "GET" || c.req.method === "POST") && authPath === "/api/auth/get-session");
   const activeSession = await getAuth().api.getSession({ headers: c.req.raw.headers }).catch(() => null);
   const activeUserId = activeSession?.user?.id;
   if (activeUserId && !isAllowedFirstLoginAuthPath) {
