@@ -10,6 +10,7 @@ import NotFound from "./pages/not-found/Index";
 import AdminPage from "./pages/admin/Index";
 import AuthPage from "./pages/auth/Index";
 import ResetPasswordPage from "./pages/reset-password/Index";
+import ChangeTemporaryPasswordPage from "./pages/change-temporary-password/Index";
 import MyBookingsPage from "./pages/my-bookings/Index";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/contato" element={<ContactPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/trocar-senha" element={<ChangeTemporaryPasswordPage />} />
           <Route path="/minhas-reservas" element={<MyBookingsPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
