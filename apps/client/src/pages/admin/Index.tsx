@@ -284,6 +284,7 @@ function AdminContent() {
               <p className="text-sm text-[#8c7767]">Yuri e Letícia têm acesso administrativo com as mesmas permissões.</p>
             </div>
 
+            <div className="mb-5 flex flex-wrap gap-2"><button type="button" onClick={() => { setHistoryView(false); setStatusFilter("all"); }} className={`rounded-full px-4 py-2 text-sm font-semibold ${!historyView ? "bg-[#705844] text-white" : "border border-[#dfcdbd] bg-white text-[#705844]"}`}>Agenda atual</button><button type="button" onClick={() => { setHistoryView(true); setStatusFilter("all"); }} className={`rounded-full px-4 py-2 text-sm font-semibold ${historyView ? "bg-[#705844] text-white" : "border border-[#dfcdbd] bg-white text-[#705844]"}`}>Histórico</button></div>
             <div className="mb-6 grid gap-3 rounded-2xl bg-[#fbf6f0] p-4 sm:grid-cols-[1fr_1fr]">
               <label className="grid gap-2 text-sm font-medium text-[#705844]">
                 Filtrar por data
