@@ -14,6 +14,8 @@ type CustomerBooking = {
   status: "pending" | "confirmed" | "rejected" | "cancelled";
   createdAt: string;
   updatedAt: string;
+  paymentStatus: "paid" | "unpaid";
+  completedAt: string | null;
 };
 
 type ApiPayload = {
@@ -170,6 +172,10 @@ export default function MyBookingsPage() {
                       <p className="mt-2 text-muted-foreground">{dateLabel(booking.bookingDate)} · {booking.bookingTime}</p>
                     </div>
                     <span className="rounded-full bg-secondary px-3 py-1 text-sm text-secondary-foreground">{statusLabel[booking.status]}</span>
+                  </div>
+                  <div className="mt-4 grid gap-2 rounded-xl bg-secondary/50 p-4 text-sm">
+                    <p><strong>Pagamento:</strong> {booking.paymentStatus === "paid" ? "Pago" : "Aguardando pagamento"}</p>
+                    <p><strong>Atendimento:</strong> {booking.completedAt ? "Concluído" : "Ainda não concluído"}</p>
                   </div>
                   {booking.status === "pending" || booking.status === "confirmed" ? (
                     <a className="mt-5 inline-flex min-h-11 items-center rounded-full border border-primary/30 px-5 text-sm text-primary hover:bg-primary/5" href={whatsappLink(`Olá, gostaria de solicitar o cancelamento do meu horário de ${booking.service}, em ${dateLabel(booking.bookingDate)} às ${booking.bookingTime}.`)} target="_blank" rel="noreferrer">
