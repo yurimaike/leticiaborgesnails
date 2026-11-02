@@ -3,7 +3,6 @@ import { z } from "zod";
 import { apiFailure, apiSuccess } from "@repo/shared/http";
 import { DatabaseError, executeSql } from "../_core/db";
 import { adminRoute, publicRoute } from "../_core/route-helpers";
-import { BOOKING_SERVICES } from "../services/bookings";
 import { bodySizeLimit } from "../middlewares/body-size-limit";
 
 export const servicePricesRouter = new Hono();
