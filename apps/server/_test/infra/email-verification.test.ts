@@ -2,10 +2,13 @@ import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { applyMigrations, resetDatabase, signUpAndGetToken } from "../helpers";
 import { executeSql } from "../../_core/db";
 
-const sentCodes = new Map<string, string>();
-const sendEmailVerificationCode = vi.fn(async ({ email, code }: { email: string; code: string }) => {
-  sentCodes.set(email.toLowerCase(), code);
-  return { id: "email_1" };
+const { sentCodes, sendEmailVerificationCode } = vi.hoisted(() => {
+  const sentCodes = new Map<string, string>();
+  const sendEmailVerificationCode = vi.fn(async ({ email, code }: { email: string; code: string }) => {
+    sentCodes.set(email.toLowerCase(), code);
+    return { id: "email_1" };
+  });
+  return { sentCodes, sendEmailVerificationCode };
 });
 type ApiErrorBody = { error: { code: string } };
 

@@ -5,6 +5,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getAuth } from "../_core/auth";
 import { executeSql } from "../_core/db";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -45,7 +46,7 @@ function splitSqlStatements(sql: string): string[] {
 
 // Wipe all per-user data so each test starts clean. Delete in dependency
 // order (child tables first) so ON DELETE CASCADE doesn't fire mid-loop.
-// Auth tables are reset too so signUp can be called repeatedly with a fresh
+// Auth tables are reset too so test users can be created repeatedly with a fresh
 // email and not collide on UNIQUE(email).
 export async function resetDatabase(): Promise<void> {
   await executeSql("DELETE FROM todos");
@@ -65,13 +66,12 @@ export type SignedUpUser = {
   userId?: string;
 };
 
-// Sign up via the real Hono app at POST /api/auth/sign-up/email. Better Auth's
-// bearer() plugin returns the session token in the `set-auth-token` response
-// header — that's what subsequent requests need as `Authorization: Bearer X`.
-// A monotonic counter + timestamp ensures emails are unique across calls in
-// the same test process.
+// Create a test fixture directly through Better Auth's server API because
+// public self-registration is closed. The bearer plugin returns the token
+// used by subsequent requests as `Authorization: Bearer X`. A monotonic
+// counter + timestamp keeps generated fixture emails unique.
 export async function signUpAndGetToken(
-  app: { fetch: (req: Request) => Promise<Response> },
+  _app: { fetch: (req: Request) => Promise<Response> },
   overrides: { email?: string; password?: string; name?: string } = {}
 ): Promise<SignedUpUser> {
   signupCounter += 1;
@@ -83,31 +83,16 @@ export async function signUpAndGetToken(
     [email.toLowerCase(), "test-fixture", Math.floor(Date.now() / 1000)]
   );
 
-  const res = await app.fetch(
-    new Request("http://localhost/api/auth/sign-up/email", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        origin: "http://localhost:3000"
-      },
-      body: JSON.stringify({ email, password, name })
-    })
-  );
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`signUp failed: ${res.status} ${body}`);
+  // Public self-registration is intentionally closed in create-app.ts.
+  // Tests create fixture users through Better Auth's server API directly.
+  const created = await getAuth().api.signUpEmail({
+    body: { email, password, name }
+  });
+  if (!created.token) {
+    throw new Error("Better Auth signUpEmail returned no session token");
   }
 
-  const token = res.headers.get("set-auth-token");
-  if (!token) {
-    throw new Error(
-      "signUp returned no set-auth-token header — bearer() plugin missing in _core/auth.ts?"
-    );
-  }
-
-  const body = (await res.json()) as { user?: { id?: string } };
-  return { token, email, password, userId: body.user?.id };
+  return { token: created.token, email, password, userId: created.user.id };
 }
 
 // Sign in an existing account (used when a test needs to prove that the

@@ -44,7 +44,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { data: session, isPending, refetch: refetchSession } = authClient.useSession();
 
-  const mode = "signin" as const;
+  const [mode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setSenha] = useState("");
@@ -100,6 +100,15 @@ const AuthPage = () => {
         await sendVerificationCode();
         setPendingVerificationEmail(email);
         toast.success("Verification code sent");
+        return;
+      }
+
+      const statusResponse = await apiFetch("/account/first-login-status", { silent: true });
+      if (!statusResponse.ok) throw new Error("Não foi possível verificar a situação da senha.");
+      const statusPayload = await statusResponse.json() as { ok: boolean; data?: { mustChangePassword?: boolean } };
+      if (statusPayload.data?.mustChangePassword) {
+        toast.success("Entre com sua nova senha para concluir o primeiro acesso.");
+        navigate("/trocar-senha", { replace: true });
         return;
       }
 

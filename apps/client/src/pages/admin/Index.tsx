@@ -44,8 +44,10 @@ function AdminContent() {
   const [serviceChoices] = useState(["Manicure e pedicure", "Esmaltação em gel", "Banho de gel", "Manutenção"]);
   const [redeemChoices, setRedeemChoices] = useState<Record<string, string>>({});
   const [redeemBookingChoices, setRedeemBookingChoices] = useState<Record<string, string>>({});
-  const [authorisedEmails, setAuthorisedEmails] = useState<Array<{ email: string; createdAt: number }>>([]);
+  const [authorisedEmails, setAuthorisedEmails] = useState<Array<{ email: string; createdAt: number; userId?: string | null; name?: string | null }>>([]);
   const [authorisedEmailInput, setAuthorisedEmailInput] = useState("");
+  const [resettingEmail, setResettingEmail] = useState("");
+  const [temporaryCredentials, setTemporaryCredentials] = useState<{ name: string; email: string; temporaryPassword: string; sessionsRevoked: boolean } | null>(null);
 
   async function refresh() {
     setRefreshing(true);
@@ -74,7 +76,7 @@ function AdminContent() {
   async function refreshAuthorisedEmails() {
     try {
       const response = await apiFetch("/email-authorizations");
-      const payload = await response.json() as Payload<{ emails: Array<{ email: string; createdAt: number }> }>;
+      const payload = await response.json() as Payload<{ emails: Array<{ email: string; createdAt: number; userId?: string | null; name?: string | null }> }>;
       if (!response.ok || !payload.ok) throw new Error(payload.error?.message ?? "Não foi possível carregar os e-mails autorizados.");
       setAuthorisedEmails(payload.data?.emails ?? []);
     } catch (cause) {
@@ -98,6 +100,38 @@ function AdminContent() {
       await refreshAuthorisedEmails();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Erro ao autorizar e-mail.");
+    }
+  }
+
+  async function resetExistingAccountPassword(email: string) {
+    if (!window.confirm(`Gerar uma nova senha temporária para ${email}? A senha atual deixará de funcionar e todas as sessões desta conta serão encerradas. A conta, o histórico e as permissões serão mantidos.`)) return;
+    setResettingEmail(email);
+    setError("");
+    setTemporaryCredentials(null);
+    try {
+      const response = await apiFetch(`/email-authorizations/${encodeURIComponent(email)}/reset-password`, { method: "POST" });
+      const payload = await response.json() as Payload<{ account: { name: string; email: string }; temporaryPassword: string; sessionsRevoked: boolean }>;
+      if (!response.ok || !payload.ok || !payload.data) throw new Error(payload.error?.message ?? "Não foi possível gerar a nova senha.");
+      setTemporaryCredentials({
+        name: payload.data.account.name,
+        email: payload.data.account.email,
+        temporaryPassword: payload.data.temporaryPassword,
+        sessionsRevoked: payload.data.sessionsRevoked
+      });
+      await refreshAuthorisedEmails();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Erro ao gerar nova senha.");
+    } finally {
+      setResettingEmail("");
+    }
+  }
+
+  async function copyTemporaryPassword() {
+    if (!temporaryCredentials) return;
+    try {
+      await navigator.clipboard.writeText(temporaryCredentials.temporaryPassword);
+    } catch {
+      setError("Não foi possível copiar automaticamente. Selecione e copie a senha exibida.");
     }
   }
 
@@ -291,14 +325,15 @@ function AdminContent() {
           </section>
 
           <section className="mb-7 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
-            <h2 className="font-serif text-2xl text-[#493629]">E-mails autorizados</h2>
-            <p className="mt-1 text-sm text-[#8c7767]">Cadastre aqui os e-mails originais de funcionários, familiares ou pessoas autorizadas. Só esses endereços podem criar conta e entrar nas áreas autenticadas. Remover um e-mail encerra o acesso de funcionário, mesmo em contas existentes; a pessoa ainda poderá consultar serviços e fazer reservas públicas como cliente.</p>
+            <h2 className="font-serif text-2xl text-[#493629]">Acesso de funcionários e familiares</h2>
+            <p className="mt-1 text-sm text-[#8c7767]">Autorize o e-mail que já pertence à conta original da pessoa. Para trocar uma senha esquecida, use Gerar nova senha temporária ao lado do e-mail. O sistema mantém a mesma conta, histórico, permissões e identificador; não cria outra conta.</p>
             <form onSubmit={addAuthorisedEmail} className="mt-4 flex flex-col gap-3 sm:flex-row">
-              <input type="email" required maxLength={254} value={authorisedEmailInput} onChange={event => setAuthorisedEmailInput(event.target.value)} placeholder="nome@gmail.com" className="min-w-0 flex-1 rounded-xl border border-[#dfcdbd] bg-white px-4 py-3 text-sm text-[#493629] outline-none focus:border-[#a77d60]" />
+              <input type="email" required maxLength={254} value={authorisedEmailInput} onChange={event => setAuthorisedEmailInput(event.target.value)} placeholder="e-mail da conta existente" className="min-w-0 flex-1 rounded-xl border border-[#dfcdbd] bg-white px-4 py-3 text-sm text-[#493629] outline-none focus:border-[#a77d60]" />
               <button type="submit" className="rounded-full bg-[#705844] px-5 py-3 text-sm font-semibold text-white">Autorizar e-mail</button>
             </form>
+            {temporaryCredentials && <div className="mt-4 rounded-2xl border border-[#d9c4b1] bg-[#fbf6f0] p-4 text-sm text-[#493629]"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">Nova senha gerada para {temporaryCredentials.name}</p><p className="mt-1">{temporaryCredentials.email}</p></div><button type="button" onClick={() => setTemporaryCredentials(null)} className="rounded-full border border-[#d9c4b1] bg-white px-3 py-1 text-xs font-semibold">Fechar</button></div><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#806c5d]">Senha temporária — exibida somente agora</p><code className="mt-1 block break-all rounded-lg bg-white p-3 text-base">{temporaryCredentials.temporaryPassword}</code><button type="button" onClick={() => void copyTemporaryPassword()} className="mt-3 rounded-full bg-[#705844] px-4 py-2 text-xs font-semibold text-white">Copiar senha temporária</button><p className="mt-2 text-xs text-[#806c5d]">A pessoa entra com o mesmo e-mail e esta senha. No primeiro acesso, deverá criar uma senha pessoal. A senha anterior foi substituída.</p>{!temporaryCredentials.sessionsRevoked && <p className="mt-2 text-xs font-semibold text-[#9b594c]">Atenção: não foi possível encerrar todas as sessões antigas. Elas continuam bloqueadas até a troca da senha.</p>}</div>}
             <div className="mt-4 space-y-2">
-              {authorisedEmails.map(item => <div key={item.email} className="flex flex-col gap-2 rounded-xl border border-[#eaded3] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"><span className="break-all text-sm text-[#493629]">{item.email}</span><button type="button" onClick={() => void removeAuthorisedEmail(item.email)} className="w-fit rounded-full border border-[#e3c8c0] px-3 py-1.5 text-xs font-semibold text-[#9b594c]">Remover autorização</button></div>)}
+              {authorisedEmails.map(item => <div key={item.email} className="flex flex-col gap-2 rounded-xl border border-[#eaded3] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="break-all text-sm font-medium text-[#493629]">{item.name || item.email}</p>{item.name && <p className="break-all text-xs text-[#8c7767]">{item.email}</p>}</div><div className="flex flex-wrap items-center gap-2">{item.userId ? <button type="button" disabled={resettingEmail === item.email} onClick={() => void resetExistingAccountPassword(item.email)} className="w-fit rounded-full bg-[#705844] px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50">{resettingEmail === item.email ? "Gerando..." : "Gerar nova senha temporária"}</button> : <span className="text-xs text-[#9a8574]">Conta original não encontrada</span>}<button type="button" onClick={() => void removeAuthorisedEmail(item.email)} className="w-fit rounded-full border border-[#e3c8c0] px-3 py-1.5 text-xs font-semibold text-[#9b594c]">Remover autorização</button></div></div>)}
               {authorisedEmails.length === 0 && <p className="rounded-xl bg-[#fbf6f0] px-4 py-5 text-sm text-[#8c7767]">Nenhum e-mail autorizado ainda.</p>}
             </div>
           </section>

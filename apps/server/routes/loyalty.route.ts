@@ -52,7 +52,7 @@ loyaltyRouter.patch("/bookings/:id/payment", adminRoute, bodySizeLimit, async (c
   try {
     const result = await executeSql(
       "UPDATE bookings SET paymentStatus=?, paymentAmountCents=?, paymentUpdatedAt=CURRENT_TIMESTAMP, updatedAt=CURRENT_TIMESTAMP WHERE id=? AND status NOT IN ('rejected','cancelled')",
-      [parsed.data.paid ? "paid" : "unpaid", parsed.data.paid ? parsed.data.amountCents : null, c.req.param("id")]
+      [parsed.data.paid ? "paid" : "unpaid", parsed.data.paid ? parsed.data.amountCents ?? null : null, c.req.param("id")]
     );
     if (Number(result.rowsAffected) !== 1) return c.json(apiFailure("BOOKING_NOT_FOUND", "Reserva não encontrada ou cancelada."), 404);
     const booking = await executeSql("SELECT customerEmail,customerName FROM bookings WHERE id=?", [c.req.param("id")]);
