@@ -28,10 +28,14 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
     return c.json(apiFailure("DATABASE_UNCONFIGURED", "Skybase database runtime env is not configured"), 503);
   }
 
-  // Every email/password sign-in and sign-up requires current admin authorisation.
-  // Removing an address therefore blocks both future logins and account creation.
+  // Public self-registration is closed. Accounts are provisioned by an administrator.
   const authPath = new URL(c.req.url).pathname;
-  if (c.req.method === "POST" && ["/api/auth/sign-up/email", "/api/auth/sign-in/email"].includes(authPath)) {
+  if (c.req.method === "POST" && authPath === "/api/auth/sign-up/email") {
+    return c.json(apiFailure("REGISTRATION_CLOSED", "O cadastro é feito somente pelo administrador."), 403);
+  }
+
+  // Email/password sign-in requires current administrator authorisation.
+  if (c.req.method === "POST" && authPath === "/api/auth/sign-in/email") {
     const body = await c.req.raw.clone().json().catch(() => null) as { email?: unknown } | null;
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
