@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "@/lib/api";
 import { authClient } from "@/lib/auth";
@@ -16,9 +16,10 @@ type CustomerBooking = {
   completedAt: string | null;
 };
 type Reward = { id: string; status: string; earnedAt: string; expiresAt: string | null; redeemedAt: string | null; redeemedService: string | null };
+type LoyaltyData = { enabled: boolean; completedPaid: number; bookingsUntilReward: number | null; rewards: Reward[] };
 type ApiPayload = {
   ok?: boolean;
-  data?: { bookings?: CustomerBooking[]; booking?: CustomerBooking & { bookingCode: string }; loyalty?: { enabled: boolean; completedPaid: number; bookingsUntilReward: number | null; rewards: Reward[] } };
+  data?: { bookings?: CustomerBooking[]; booking?: CustomerBooking & { bookingCode: string }; loyalty?: LoyaltyData };
   error?: { message?: string };
 };
 const statusLabel: Record<CustomerBooking["status"], string> = {
@@ -34,7 +35,7 @@ export default function MyBookingsPage() {
   const [accountBookings, setAccountBookings] = useState<CustomerBooking[]>([]);
   const [bookingCode, setBookingCode] = useState("");
   const [guestBooking, setGuestBooking] = useState<(CustomerBooking & { bookingCode: string }) | null>(null);
-  const [guestLoyalty, setGuestLoyalty] = useState<ApiPayload["data"] extends infer D ? D extends { loyalty?: infer L } ? L : never : never>(undefined);
+  const [guestLoyalty, setGuestLoyalty] = useState<LoyaltyData | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -52,7 +53,7 @@ export default function MyBookingsPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [isVerifiedAccount, session?.user?.id]);
-  async function lookupGuest(event: React.FormEvent<HTMLFormElement>) {
+  async function lookupGuest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true); setError(""); setNotice(""); setGuestBooking(null); setGuestLoyalty(undefined);
     try {
