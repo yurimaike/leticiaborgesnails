@@ -1,10 +1,13 @@
 import "./hero-image.css";
 import { ArrowUpRight, CalendarDays, Camera, Check, Clock3, Heart, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import SiteLayout from "../../site/SiteLayout";
 import { salonContact, services, whatsappLink } from "../../site/siteData";
 
 const Index = () => {
+  const [heartBurst, setHeartBurst] = useState(0);
+
   return (
     <SiteLayout
       title="Nail Designer Leticia | Manicure e pedicure em Nova Tramandaí"
@@ -47,9 +50,23 @@ const Index = () => {
                 height="720"
               />
             </div>
-            <div className="floating-stamp">
-              <Heart size={16} fill="currentColor" />
-              <span>feito com cuidado</span>
+            <div className="floating-stamp-wrap">
+              <button
+                className="floating-stamp"
+                type="button"
+                aria-label="Feito com cuidado. Clique para ver corações."
+                onClick={() => setHeartBurst((value) => value + 1)}
+              >
+                <Heart size={16} fill="currentColor" />
+                <span>feito com cuidado</span>
+              </button>
+              {heartBurst > 0 && (
+                <span className="heart-burst" key={heartBurst} aria-hidden="true">
+                  {Array.from({ length: 9 }, (_, index) => (
+                    <span className={`burst-heart burst-heart-${index + 1}`} key={index}>♥</span>
+                  ))}
+                </span>
+              )}
             </div>
             <div className="hero-booking-link">
               <Link className="button button-primary" to="/agenda">
