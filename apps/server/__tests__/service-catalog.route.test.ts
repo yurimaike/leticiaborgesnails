@@ -4,7 +4,12 @@ import { executeSql } from "../_core/db";
 import { applyMigrations, fetchWithAuth, resetDatabase, signUpAndGetToken } from "../_test/helpers";
 
 beforeAll(async () => { await applyMigrations(); });
-beforeEach(async () => { await resetDatabase(); });
+beforeEach(async () => {
+  await resetDatabase();
+  await executeSql("DELETE FROM service_catalog WHERE id NOT IN (?,?,?,?)", ["service-gel","service-feet-traditional","service-hands-traditional","service-maintenance"]);
+  await executeSql("UPDATE service_catalog SET active=1");
+  await executeSql("UPDATE service_prices SET priceCents=NULL");
+});
 
 describe("service catalog route", () => {
   it("lists only active services publicly", async () => {
