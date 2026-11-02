@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { apiFailure, apiSuccess } from "@repo/shared/http";
 import { adminRoute } from "../_core/route-helpers";
-import { DatabaseError, executeSql } from "../_core/db";
+import { DatabaseError, executeSql, getClient } from "../_core/db";
 import { bodySizeLimit } from "../middlewares/body-size-limit";
 
 export const financeRouter = new Hono();
@@ -65,26 +65,36 @@ financeRouter.patch("/:id", adminRoute, bodySizeLimit, async (c) => {
     const user = c.get("currentUser") as { id?: string } | undefined;
     if (!user?.id) return c.json(apiFailure("UNAUTHENTICATED", "Sessão administrativa necessária."), 401);
     const id = c.req.param("id");
-    const currentResult = await executeSql(
-      "SELECT id,type,amountCents,category,description,transactionDate,bookingId FROM finance_transactions WHERE id=?",
-      [id]
-    );
-    const current = currentResult.rows[0];
-    if (!current) return c.json(apiFailure("TRANSACTION_NOT_FOUND", "Lançamento não encontrado."), 404);
-    await executeSql(
-      "UPDATE finance_transactions SET amountCents=?,category=?,description=?,transactionDate=? WHERE id=?",
-      [parsed.data.amountCents, parsed.data.category, parsed.data.description, parsed.data.transactionDate, id]
-    );
-    await executeSql(
-      "INSERT INTO finance_transaction_audit (id,transactionId,changedBy,oldValues,newValues) VALUES (?,?,?,?,?)",
-      [randomUUID(), id, user.id, JSON.stringify({
-        type: current.type, amountCents: current.amountCents, category: current.category,
-        description: current.description, transactionDate: current.transactionDate
-      }), JSON.stringify({
-        type: current.type, amountCents: parsed.data.amountCents, category: parsed.data.category,
-        description: parsed.data.description, transactionDate: parsed.data.transactionDate
-      })]
-    );
+    const tx = await getClient().transaction("write");
+    try {
+      const currentResult = await tx.execute(
+        "SELECT id,type,amountCents,category,description,transactionDate,bookingId FROM finance_transactions WHERE id=?",
+        [id]
+      );
+      const current = currentResult.rows[0];
+      if (!current) {
+        await tx.rollback();
+        return c.json(apiFailure("TRANSACTION_NOT_FOUND", "Lançamento não encontrado."), 404);
+      }
+      await tx.execute(
+        "UPDATE finance_transactions SET amountCents=?,category=?,description=?,transactionDate=? WHERE id=?",
+        [parsed.data.amountCents, parsed.data.category, parsed.data.description, parsed.data.transactionDate, id]
+      );
+      await tx.execute(
+        "INSERT INTO finance_transaction_audit (id,transactionId,changedBy,oldValues,newValues) VALUES (?,?,?,?,?)",
+        [randomUUID(), id, user.id, JSON.stringify({
+          type: current.type, amountCents: current.amountCents, category: current.category,
+          description: current.description, transactionDate: current.transactionDate
+        }), JSON.stringify({
+          type: current.type, amountCents: parsed.data.amountCents, category: parsed.data.category,
+          description: parsed.data.description, transactionDate: parsed.data.transactionDate
+        })]
+      );
+      await tx.commit();
+    } catch (error) {
+      await tx.rollback().catch(() => undefined);
+      throw error;
+    }
     return c.json(apiSuccess({ id }));
   } catch (error) { return fail(c, error); }
 });
