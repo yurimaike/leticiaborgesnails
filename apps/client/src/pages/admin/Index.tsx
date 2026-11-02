@@ -300,9 +300,27 @@ function AdminContent() {
             </button>
           </div>
 
+          <nav aria-label="Navegação do painel administrativo" className="sticky top-2 z-30 mb-6 -mx-1 rounded-2xl border border-[#e8d9cb] bg-[#fffdfa]/95 p-2 shadow-[0_8px_24px_rgba(92,65,43,0.08)] backdrop-blur">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {[
+                ["overview", "Resumo"],
+                ["operating", "Funcionamento"],
+                ["services", "Serviços"],
+                ["finance", "Financeiro"],
+                ["loyalty", "Fidelidade"],
+                ["team", "Equipa"],
+                ["bookings", "Reservas"],
+              ].map(([id, label]) => (
+                <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold text-[#705844] transition hover:bg-[#f2e8de] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]">
+                  {label}
+                </a>
+              ))}
+            </div>
+          </nav>
+
           <AdminHelpGuide />
 
-          <div className="mb-7 grid gap-4 sm:grid-cols-3">
+          <div id="overview" className="mb-7 grid scroll-mt-28 gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-[#eadbce] bg-white p-5 shadow-[0_8px_24px_rgba(92,65,43,0.05)]">
               <p className="text-sm text-[#8c7767]">Total de reservas</p>
               <p className="mt-2 font-serif text-3xl text-[#493629]">{items.length}</p>
@@ -317,13 +335,15 @@ function AdminContent() {
             </div>
           </div>
 
-          <SalonSettingsPanel />
-          <ServiceCatalogPanel />
-          <ServicePricesPanel />
+          <div id="operating" className="scroll-mt-28"><SalonSettingsPanel /></div>
+          <div id="services" className="scroll-mt-28 space-y-7">
+            <ServiceCatalogPanel />
+            <ServicePricesPanel />
+          </div>
 
-          <FinancePanel />
+          <div id="finance" className="scroll-mt-28"><FinancePanel /></div>
 
-          <section className="mb-7 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+          <section id="loyalty" className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div><h2 className="font-serif text-2xl text-[#493629]">Fidelidade: a cada 8 atendimentos</h2><p className="mt-1 text-sm text-[#8c7767]">Somente atendimentos pagos e concluídos contam. O bônus dá direito a um serviço cadastrado.</p></div>
               <button type="button" onClick={() => void toggleLoyalty()} className={`rounded-full px-5 py-2.5 text-sm font-semibold ${loyalty.enabled ? "bg-[#6d8267] text-white" : "border border-[#d9c4b1] bg-white text-[#705844]"}`}>{loyalty.enabled ? "Programa ativado · Desativar" : "Programa desativado · Ativar"}</button>
@@ -332,7 +352,7 @@ function AdminContent() {
             <div className="mt-5 space-y-3">{loyalty.rewards.map(reward => <div key={reward.id} className="flex flex-col gap-3 rounded-xl border border-[#eaded3] p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold text-[#493629]">{reward.customerName}</p><p className="text-xs text-[#8c7767]">{reward.customerEmail} · Ciclo {reward.cycleNumber} · {reward.status === "earned" ? `Vence em: ${reward.expiresAt ? new Date(reward.expiresAt).toLocaleDateString("pt-BR") : "sem prazo definido"}` : `Utilizado: ${reward.redeemedService ?? "serviço"}`}</p></div>{reward.status === "earned" && <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void adjustRewardValidity(reward)} className="rounded-full border border-[#d9c4b1] bg-white px-3 py-2 text-xs font-semibold text-[#705844]">Ajustar validade</button><select aria-label={`Reserva para resgate de ${reward.customerName}`} value={redeemBookingChoices[reward.id] || ""} onChange={event => setRedeemBookingChoices(old => ({ ...old, [reward.id]: event.target.value }))} className="rounded-xl border border-[#dfcdbd] bg-white px-3 py-2 text-sm text-[#493629]"><option value="">Escolher reserva aprovada</option>{items.filter(item => item.customerEmail.toLowerCase() === reward.customerEmail.toLowerCase() && item.status === "confirmed").map(item => <option key={item.id} value={item.id}>{item.bookingDate} · {item.bookingTime} · {item.service}</option>)}</select><select aria-label={`Serviço gratuito de ${reward.customerName}`} value={redeemChoices[reward.id] || serviceChoices[0]} onChange={event => setRedeemChoices(old => ({ ...old, [reward.id]: event.target.value }))} className="rounded-xl border border-[#dfcdbd] bg-white px-3 py-2 text-sm text-[#493629]">{serviceChoices.map(service => <option key={service}>{service}</option>)}</select><button type="button" onClick={() => void redeemReward(reward)} className="rounded-full bg-[#6d8267] px-4 py-2 text-sm font-semibold text-white">Confirmar resgate</button></div>}</div>)}</div>
           </section>
 
-          <section className="mb-7 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+          <section id="team" className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
             <h2 className="font-serif text-2xl text-[#493629]">Acesso de funcionários e familiares</h2>
             <p className="mt-1 text-sm text-[#8c7767]">Autorize o e-mail que já pertence à conta original da pessoa. Para trocar uma senha esquecida, use Gerar nova senha temporária ao lado do e-mail. O sistema mantém a mesma conta, histórico, permissões e identificador; não cria outra conta.</p>
             <form onSubmit={addAuthorisedEmail} className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -346,7 +366,7 @@ function AdminContent() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+          <section id="bookings" className="scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
             <div className="mb-6 flex flex-col gap-1">
               <h2 className="font-serif text-2xl text-[#493629]">Reservas recebidas</h2>
               <p className="text-sm text-[#8c7767]">Yuri e Letícia têm acesso administrativo com as mesmas permissões.</p>
