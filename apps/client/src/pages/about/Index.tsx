@@ -9,7 +9,7 @@ export default function AboutPage() {
         <p className="eyebrow">Nail Designer Letícia</p>
         <h1>Cuidado em cada <em>detalhe.</em></h1>
         <p className="hero-lede">
-          Manicure, pedicure, esmaltação em gel, banho de gel e manutenção
+          Esmaltação em gel, pés tradicional, mãos tradicional e manutenção
           em Nova Tramandaí, com acabamento delicado e atendimento próximo.
         </p>
         <p className="hero-lede">
