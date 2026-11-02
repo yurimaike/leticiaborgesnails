@@ -86,11 +86,12 @@ describe("acesso administrativo pelo menu", () => {
 
   it("conta comum autenticada é recusada pelo perfil retornado pelo servidor", async () => {
     mocks.signIn.mockResolvedValue({ data: { token: "fixture-token" } });
-    mocks.apiFetch.mockResolvedValue(profile("user"));
+    mocks.apiFetch.mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { mustChangePassword: false } }), { status: 200, headers: { "Content-Type": "application/json" } })).mockResolvedValue(profile("user"));
     renderSite();
     submitLogin();
     expect(await screen.findByText("Esta conta não possui acesso administrativo.")).not.toBeNull();
-    expect(mocks.apiFetch).toHaveBeenCalledWith("/me/profile", { silent: true });
+    expect(mocks.apiFetch).toHaveBeenNthCalledWith(1, "/account/first-login-status", { silent: true });
+    expect(mocks.apiFetch).toHaveBeenNthCalledWith(2, "/me/profile", { silent: true });
     expect(screen.queryByText("Painel autorizado")).toBeNull();
   });
 
@@ -98,7 +99,7 @@ describe("acesso administrativo pelo menu", () => {
     let finishRefresh: () => void = () => undefined;
     mocks.refetch.mockImplementation(() => new Promise<void>((resolve) => { finishRefresh = resolve; }));
     mocks.signIn.mockResolvedValue({ data: { token: "fixture-token" } });
-    mocks.apiFetch.mockResolvedValue(profile("admin"));
+    mocks.apiFetch.mockResolvedValueOnce(new Response(JSON.stringify({ ok: true, data: { mustChangePassword: false } }), { status: 200, headers: { "Content-Type": "application/json" } })).mockResolvedValue(profile("admin"));
     renderSite();
     submitLogin();
     await waitFor(() => expect(mocks.refetch).toHaveBeenCalled());
