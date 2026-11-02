@@ -764,3 +764,49 @@ h1, h2, h3, p { margin-top: 0; }
     bottom: 16px;
   }
 }
+
+/* Delicate anime-style hearts and sparkles on the home-page entrance */
+.anime-heart-sparkles {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  overflow: hidden;
+  pointer-events: none;
+  animation: anime-sparkles-out 1s ease 4.8s forwards;
+}
+.anime-particle {
+  position: absolute;
+  bottom: -36px;
+  left: var(--particle-x);
+  opacity: 0;
+  line-height: 1;
+  user-select: none;
+  animation: anime-heart-rise 4.8s ease-out var(--particle-delay) both;
+  filter: drop-shadow(0 2px 5px rgba(118,84,63,.12));
+}
+.anime-particle.heart { color: #c98291; font-size: clamp(18px, 2.5vw, 28px); }
+.anime-particle.sparkle { color: #b99463; font-size: clamp(15px, 2vw, 23px); }
+.heart-1 { --particle-x: 8%; --particle-delay: .1s; }
+.sparkle-2 { --particle-x: 23%; --particle-delay: .55s; }
+.heart-3 { --particle-x: 38%; --particle-delay: .25s; }
+.sparkle-4 { --particle-x: 52%; --particle-delay: .8s; }
+.heart-5 { --particle-x: 68%; --particle-delay: .45s; }
+.sparkle-6 { --particle-x: 82%; --particle-delay: .15s; }
+.heart-7 { --particle-x: 93%; --particle-delay: .7s; }
+.sparkle-8 { --particle-x: 15%; --particle-delay: 1.1s; }
+.heart-9 { --particle-x: 48%; --particle-delay: 1.3s; }
+.sparkle-10 { --particle-x: 74%; --particle-delay: 1s; }
+.heart-11 { --particle-x: 31%; --particle-delay: 1.5s; }
+.sparkle-12 { --particle-x: 88%; --particle-delay: 1.25s; }
+@keyframes anime-heart-rise {
+  0% { transform: translate3d(0, 0, 0) rotate(-12deg) scale(.65); opacity: 0; }
+  12% { opacity: .78; }
+  45% { transform: translate3d(16px, -42vh, 0) rotate(12deg) scale(1); }
+  82% { opacity: .62; }
+  100% { transform: translate3d(-10px, -110vh, 0) rotate(-8deg) scale(.85); opacity: 0; }
+}
+@keyframes anime-sparkles-out { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .anime-heart-sparkles { display: none; animation: none; }
+  .anime-particle { animation: none; }
+}
