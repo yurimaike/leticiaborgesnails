@@ -10,9 +10,10 @@ const server = serve({
   port: env.SKY_FC_SERVER_PORT
 });
 
-// Keep HTTP connections alive longer than the Render edge proxy timeout.
-server.keepAliveTimeout = 120_000;
-server.headersTimeout = 121_000;
+// Keep HTTP connections alive longer than the Render edge proxy timeout
+// when the runtime returns a Node HTTP/1 server (HTTP/2 omits these fields).
+if ("keepAliveTimeout" in server) server.keepAliveTimeout = 120_000;
+if ("headersTimeout" in server) server.headersTimeout = 121_000;
 
 let shuttingDown = false;
 
