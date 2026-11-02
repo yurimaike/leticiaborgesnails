@@ -10,9 +10,6 @@ export const user = sqliteTable("user", {
   createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   role: text("role").default("user"),
-  banned: integer("banned", { mode: "boolean" }).notNull().default(false),
-  banReason: text("banReason"),
-  banExpires: integer("banExpires", { mode: "timestamp" }),
   username: text("username").unique(),
   displayUsername: text("displayUsername"),
   mustChangePassword: integer("mustChangePassword", { mode: "boolean" }).notNull().default(false)
@@ -26,7 +23,6 @@ export const session = sqliteTable("session", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   ipAddress: text("ipAddress"),
   userAgent: text("userAgent"),
-  impersonatedBy: text("impersonatedBy"),
   userId: text("userId")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" })
