@@ -57,10 +57,15 @@ emailAuthorizationsRouter.post("/:email/reset-password", adminRoute, limit, body
     "SELECT id, email, name FROM user WHERE lower(email) = ? LIMIT 1",
     [email]
   );
-  const accountUser = found.rows[0] as { id: string; email: string; name: string } | undefined;
-  if (!accountUser) {
+  const accountRow = found.rows[0];
+  if (!accountRow) {
     return c.json(apiFailure("ACCOUNT_NOT_FOUND", "Não existe uma conta original com este e-mail. Nenhuma conta foi criada."), 404);
   }
+  const accountUser = {
+    id: String(accountRow.id),
+    email: String(accountRow.email),
+    name: String(accountRow.name)
+  };
 
   const temporaryPassword = randomBytes(18).toString("base64url");
   const passwordHash = await hashPassword(temporaryPassword);
