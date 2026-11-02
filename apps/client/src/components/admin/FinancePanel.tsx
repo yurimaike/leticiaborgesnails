@@ -58,9 +58,9 @@ export default function FinancePanel() {
     if (!bookingResponse.ok || !bookingPayload.ok) throw new Error(bookingPayload.error?.message ?? "Não foi possível carregar as reservas.");
     setData(finance.data);
     setBookings(bookingPayload.data?.bookings ?? []);
-  }
+  }, [from, to]);
 
-  useEffect(() => { void refresh().catch(cause => setError(cause instanceof Error ? cause.message : "Erro ao carregar financeiro.")); }, [from, to]);
+  useEffect(() => { void refresh().catch(cause => setError(cause instanceof Error ? cause.message : "Erro ao carregar financeiro.")); }, [refresh]);
 
   const eligibleBookings = useMemo(() => bookings.filter(booking =>
     booking.status === "confirmed" && booking.paymentStatus === "paid" &&
