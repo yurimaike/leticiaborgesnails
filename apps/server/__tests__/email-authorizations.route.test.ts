@@ -106,6 +106,42 @@ describe("admin email authorizations", () => {
     expect(newLogin.headers.get("set-auth-token")).toBeTruthy();
   });
 
+
+  it("allows an admin to remove an authorised email when its original account does not exist", async () => {
+    const admin = await signUpAndGetToken(app, { email: "admin-orphan-remove@example.com" });
+    await executeSql("UPDATE user SET role = 'admin' WHERE id = ?", [admin.userId!]);
+
+    const email = "leticiacaio.borges30@gmail.com";
+    const added = await fetchWithAuth(app, admin.token, "/api/email-authorizations", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+    expect(added.status).toBe(201);
+
+    const before = await executeSql("SELECT id FROM user WHERE lower(email) = lower(?)", [email]);
+    expect(before.rows).toHaveLength(0);
+
+    const removed = await fetchWithAuth(
+      app,
+      admin.token,
+      `/api/email-authorizations/${encodeURIComponent(email)}`,
+      { method: "DELETE" }
+    );
+    expect(removed.status).toBe(200);
+    expect(await removed.json()).toMatchObject({
+      ok: true,
+      data: { email, removed: true, sessionsRevoked: true }
+    });
+
+    const listed = await fetchWithAuth(app, admin.token, "/api/email-authorizations");
+    expect(listed.status).toBe(200);
+    const listedBody = await listed.json() as { data?: { emails?: Array<{ email: string }> } };
+    expect(listedBody.data?.emails?.some(item => item.email.toLowerCase() === email)).toBe(false);
+
+    const after = await executeSql("SELECT id FROM user WHERE lower(email) = lower(?)", [email]);
+    expect(after.rows).toHaveLength(0);
+  });
+
   it("does not let a normal account manage the authorisation list", async () => {
     const user = await signUpAndGetToken(app, { email: "regular-user@example.com" });
     const response = await fetchWithAuth(app, user.token, "/api/email-authorizations", {
