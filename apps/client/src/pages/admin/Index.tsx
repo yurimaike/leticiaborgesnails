@@ -206,10 +206,11 @@ function AdminContent() {
 
   const visibleItems = useMemo(
     () => items.filter((booking) =>
+      (historyView ? (booking.status === "rejected" || booking.status === "cancelled" || Boolean(booking.completedAt)) : (booking.status !== "rejected" && booking.status !== "cancelled" && !booking.completedAt)) &&
       (!dateFilter || booking.bookingDate === dateFilter) &&
-      (statusFilter === "all" || booking.status === statusFilter)
+      (statusFilter === "all" || (statusFilter === "completed" ? Boolean(booking.completedAt) : booking.status === statusFilter))
     ),
-    [items, dateFilter, statusFilter],
+    [items, dateFilter, statusFilter, historyView],
   );
   const pendingCount = items.filter((booking) => booking.status === "pending").length;
   const confirmedCount = items.filter((booking) => booking.status === "confirmed").length;
