@@ -57,10 +57,43 @@ emailAuthorizationsRouter.post("/:email/reset-password", adminRoute, limit, body
     "SELECT id, email, name FROM user WHERE lower(email) = ? LIMIT 1",
     [email]
   );
-  const accountRow = found.rows[0];
+  let accountRow = found.rows[0];
+  const now = Math.floor(Date.now() / 1000);
+
+  // An administrator-authorised address may be receiving its first access.
+  // Create its initial user record only after checking the allowlist above.
+  // Reuse the name from the latest guest booking when available.
   if (!accountRow) {
-    return c.json(apiFailure("ACCOUNT_NOT_FOUND", "Não existe uma conta original com este e-mail. Nenhuma conta foi criada."), 404);
+    const booking = await executeSql(
+      "SELECT customerName FROM bookings WHERE lower(customerEmail) = ? ORDER BY createdAt DESC LIMIT 1",
+      [email]
+    );
+    const bookingName = booking.rows[0]?.customerName;
+    const fallbackName = email.split("@")[0].replace(/[._+-]+/g, " ").trim();
+    const initialName = String(bookingName || fallbackName || "Novo usuário").slice(0, 120);
+    const initialUserId = randomBytes(16).toString("hex");
+    await executeSql(
+      `INSERT INTO user (id, name, email, emailVerified, createdAt, updatedAt, role, mustChangePassword)
+       VALUES (?, ?, ?, 0, ?, ?, 'user', 1)
+       ON CONFLICT(email) DO NOTHING`,
+      [initialUserId, initialName, email, now, now]
+    );
+    const created = await executeSql(
+      "SELECT id, email, name FROM user WHERE lower(email) = ? LIMIT 1",
+      [email]
+    );
+    accountRow = created.rows[0];
+    if (!accountRow) {
+      return c.json(apiFailure("ACCOUNT_CREATION_FAILED", "Não foi possível criar o primeiro acesso. Tente novamente."), 500);
+    }
+    // Attach existing guest bookings to this same account without changing
+    // booking details or creating duplicate customer records.
+    await executeSql(
+      "UPDATE bookings SET userId = ? WHERE lower(customerEmail) = ? AND userId IS NULL",
+      [String(accountRow.id), email]
+    );
   }
+
   const accountUser = {
     id: String(accountRow.id),
     email: String(accountRow.email),
@@ -69,7 +102,6 @@ emailAuthorizationsRouter.post("/:email/reset-password", adminRoute, limit, body
 
   const temporaryPassword = randomBytes(18).toString("base64url");
   const passwordHash = await hashPassword(temporaryPassword);
-  const now = Math.floor(Date.now() / 1000);
 
   // Set the gate first. If hashing/storage fails, restore the previous flag.
   await executeSql("UPDATE user SET mustChangePassword = 1 WHERE id = ?", [accountUser.id]);
