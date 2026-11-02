@@ -20,8 +20,16 @@ vi.mock("@libsql/client/web", async () => {
 
 const TEST_DB_URL = ":memory:";
 
-// Use ??= so an external runner can override (e.g. point at a Docker
-// libsql-server for the Phase 0 :memory: vs production comparison experiment).
+// Tests must never inherit Turso credentials from the CI runner. _core/db.ts
+// prefers Turso whenever both variables are non-empty; leaving them inherited
+// can silently send test queries to a remote database that has a different
+// schema. Force the test process to use the isolated local libSQL database.
+// These are test-process values only; production configuration is unchanged.
+process.env.TURSO_DATABASE_URL = "";
+process.env.TURSO_AUTH_TOKEN = "";
+
+// Use ??= for the legacy local test client so a runner can explicitly point
+// tests at a dedicated libsql-server when needed.
 process.env.SKYBASE_DB_ENDPOINT ??= TEST_DB_URL;
 process.env.SKYBASE_DB_TOKEN ??= "test-token";
 process.env.SKYBASE_DB_NAMESPACE ??= "test-ns";
