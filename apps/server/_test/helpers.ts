@@ -5,6 +5,7 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getAuth } from "../_core/auth";
 import { executeSql } from "../_core/db";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -83,31 +84,16 @@ export async function signUpAndGetToken(
     [email.toLowerCase(), "test-fixture", Math.floor(Date.now() / 1000)]
   );
 
-  const res = await app.fetch(
-    new Request("http://localhost/api/auth/sign-up/email", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        origin: "http://localhost:3000"
-      },
-      body: JSON.stringify({ email, password, name })
-    })
-  );
-
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`signUp failed: ${res.status} ${body}`);
+  // Public self-registration is intentionally closed in create-app.ts.
+  // Tests create fixture users through Better Auth's server API directly.
+  const created = await getAuth().api.signUpEmail({
+    body: { email, password, name }
+  });
+  if (!created.token) {
+    throw new Error("Better Auth signUpEmail returned no session token");
   }
 
-  const token = res.headers.get("set-auth-token");
-  if (!token) {
-    throw new Error(
-      "signUp returned no set-auth-token header — bearer() plugin missing in _core/auth.ts?"
-    );
-  }
-
-  const body = (await res.json()) as { user?: { id?: string } };
-  return { token, email, password, userId: body.user?.id };
+  return { token: created.token, email, password, userId: created.user.id };
 }
 
 // Sign in an existing account (used when a test needs to prove that the
