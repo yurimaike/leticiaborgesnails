@@ -30,7 +30,7 @@ export async function listCustomerBookings(userId:string, verifiedEmail:string) 
   if (!userId || !verifiedEmail.trim()) throw new DatabaseError("INVALID_INPUT","Verified identity is required.",400);
   const normalizedEmail = verifiedEmail.trim().toLowerCase();
   const result = await executeSql(
-    "SELECT id,bookingDate,bookingTime,service,status,createdAt,updatedAt FROM bookings WHERE userId = ? OR (userId IS NULL AND lower(customerEmail) = ?) ORDER BY bookingDate DESC, bookingTime DESC LIMIT 100",
+    "SELECT id,bookingDate,bookingTime,service,status,createdAt,updatedAt,paymentStatus,completedAt FROM bookings WHERE userId = ? OR (userId IS NULL AND lower(customerEmail) = ?) ORDER BY bookingDate DESC, bookingTime DESC LIMIT 100",
     [userId, normalizedEmail]
   );
   return result.rows;
