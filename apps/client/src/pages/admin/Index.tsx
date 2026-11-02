@@ -6,6 +6,7 @@ import SiteLayout from "../../site/SiteLayout";
 import LeticiaAIChat from "@/components/admin/LeticiaAIChat";
 import FinancePanel from "@/components/admin/FinancePanel";
 import ServicePricesPanel from "@/components/admin/ServicePricesPanel";
+import ServiceCatalogPanel from "@/components/admin/ServiceCatalogPanel";
 import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 
 type Booking = {
@@ -314,6 +315,7 @@ function AdminContent() {
             </div>
           </div>
 
+          <ServiceCatalogPanel />
           <ServicePricesPanel />
 
           <FinancePanel />
