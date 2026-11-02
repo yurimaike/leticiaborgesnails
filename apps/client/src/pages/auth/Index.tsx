@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 /**
  * Reference auth page — wired to the rules in AGENTS.md (### Auth). This is an
@@ -45,7 +44,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { data: session, isPending, refetch: refetchSession } = authClient.useSession();
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const mode = "signin" as const;
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setSenha] = useState("");
@@ -267,16 +266,6 @@ const AuthPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs
-            value={mode}
-            onValueChange={(value) => setMode(value as "signin" | "signup")}
-            className="mb-4"
-          >
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-            </TabsList>
-          </Tabs>
           <form onSubmit={onSubmit} className="space-y-4">
             {mode === "signup" && (
               <div className="space-y-1.5">
