@@ -63,7 +63,8 @@ describe("customer booking history access", () => {
     };
 
     await expect(createBooking(input)).rejects.toMatchObject({ code: "SLOT_UNAVAILABLE", status: 409 });
-    execute.mockRejectedValue(new Error("UNIQUE constraint failed: bookings.bookingCode"));
+    execute.mockResolvedValueOnce({ rows: [{ name: "Mãos tradicional" }] } as never);
+    execute.mockRejectedValueOnce(new Error("UNIQUE constraint failed: bookings.bookingCode"));
     await expect(createBooking(input)).rejects.toThrow("UNIQUE constraint failed: bookings.bookingCode");
   });
 });
