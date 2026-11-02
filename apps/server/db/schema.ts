@@ -11,7 +11,8 @@ export const user = sqliteTable("user", {
   updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
   role: text("role").default("user"),
   username: text("username").unique(),
-  displayUsername: text("displayUsername")
+  displayUsername: text("displayUsername"),
+  mustChangePassword: integer("mustChangePassword", { mode: "boolean" }).notNull().default(false)
 });
 
 export const session = sqliteTable("session", {
