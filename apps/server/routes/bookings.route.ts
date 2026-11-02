@@ -34,7 +34,7 @@ bookingsRouter.get("/guest-access/:bookingCode",publicRoute,guestBookingCodeLimi
   const bookingCode=c.req.param("bookingCode").trim().toUpperCase();
   if(!/^LET-[A-F0-9]{8}$/.test(bookingCode))return c.json(apiFailure("INVALID_BOOKING_CODE","Confira o código da reserva."),400);
   try{
-    const result=await executeSql("SELECT id,bookingCode,bookingDate,bookingTime,service,status,paymentStatus,paymentAmountCents,paymentUpdatedAt,completedAt,customerEmail FROM bookings WHERE bookingCode=? LIMIT 1",[bookingCode]);
+    const result=await executeSql("SELECT id,bookingCode,bookingDate,bookingTime,service,status,paymentStatus,paymentAmountCents,paymentUpdatedAt,completedAt,customerEmail,customerName FROM bookings WHERE bookingCode=? LIMIT 1",[bookingCode]);
     const booking=result.rows[0];
     if(!booking)return c.json(apiFailure("BOOKING_NOT_FOUND","Não encontramos uma reserva com esse código."),404);
     const email=String(booking.customerEmail).trim().toLowerCase();
@@ -46,7 +46,7 @@ bookingsRouter.get("/guest-access/:bookingCode",publicRoute,guestBookingCodeLimi
     const enabled=Boolean(settings.rows[0]?.enabled);
     const completedPaid=Number(progress.rows[0]?.completedPaid??0);
     return c.json(apiSuccess({
-      booking:{id:String(booking.id),bookingCode:String(booking.bookingCode),bookingDate:String(booking.bookingDate),bookingTime:String(booking.bookingTime),service:String(booking.service),status:String(booking.status),paymentStatus:String(booking.paymentStatus),paymentAmountCents:booking.paymentAmountCents===null||booking.paymentAmountCents===undefined?null:Number(booking.paymentAmountCents),paymentUpdatedAt:booking.paymentUpdatedAt??null,completedAt:booking.completedAt??null},
+      booking:{id:String(booking.id),bookingCode:String(booking.bookingCode),customerName:String(booking.customerName),bookingDate:String(booking.bookingDate),bookingTime:String(booking.bookingTime),service:String(booking.service),status:String(booking.status),paymentStatus:String(booking.paymentStatus),paymentAmountCents:booking.paymentAmountCents===null||booking.paymentAmountCents===undefined?null:Number(booking.paymentAmountCents),paymentUpdatedAt:booking.paymentUpdatedAt??null,completedAt:booking.completedAt??null},
       loyalty:{enabled,completedPaid,bookingsUntilReward:enabled?8-(completedPaid%8):null,rewards:rewards.rows}
     }));
   }catch(e){return fail(e,c);}
