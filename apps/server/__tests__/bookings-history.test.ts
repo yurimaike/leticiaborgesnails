@@ -29,7 +29,8 @@ describe("customer booking history access", () => {
   it("associates new reservations only when the verified account email matches the booking email", async () => {
     const { executeSql } = await import("../_core/db");
     const execute = vi.mocked(executeSql);
-    execute.mockResolvedValue({ rowsAffected: 1, rows: [] } as never);
+    execute.mockResolvedValueOnce({ rows: [{ name: "Mãos tradicional" }] } as never);
+    execute.mockResolvedValueOnce({ rowsAffected: 1, rows: [] } as never);
     const { createBooking } = await import("../services/bookings");
     const booking = {
       customerName: "Cliente Teste",
@@ -49,7 +50,8 @@ describe("customer booking history access", () => {
   it("maps only the active time-slot unique constraint to a booking conflict", async () => {
     const { executeSql } = await import("../_core/db");
     const execute = vi.mocked(executeSql);
-    execute.mockRejectedValue(new Error("UNIQUE constraint failed: bookings.bookingDate, bookings.bookingTime"));
+    execute.mockResolvedValueOnce({ rows: [{ name: "Mãos tradicional" }] } as never);
+    execute.mockRejectedValueOnce(new Error("UNIQUE constraint failed: bookings.bookingDate, bookings.bookingTime"));
     const { createBooking } = await import("../services/bookings");
     const input = {
       customerName: "Cliente Teste",
