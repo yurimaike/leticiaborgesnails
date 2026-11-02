@@ -5,6 +5,7 @@ import { AdminGuard } from "@/components/auth/AdminGuard";
 import SiteLayout from "../../site/SiteLayout";
 import LeticiaAIChat from "@/components/admin/LeticiaAIChat";
 import FinancePanel from "@/components/admin/FinancePanel";
+import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 
 type Booking = {
   id: string;
@@ -260,6 +261,8 @@ function AdminContent() {
               {refreshing ? "Atualizando..." : "Atualizar agenda"}
             </button>
           </div>
+
+          <AdminHelpGuide />
 
           <div className="mb-7 grid gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-[#eadbce] bg-white p-5 shadow-[0_8px_24px_rgba(92,65,43,0.05)]">
