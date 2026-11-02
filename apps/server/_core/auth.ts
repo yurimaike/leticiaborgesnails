@@ -15,6 +15,7 @@ export type AuthUser = {
   emailVerified: boolean;
   role: "user" | "admin";
   username?: string;
+  mustChangePassword?: boolean;
 };
 
 export type AuthSession = {
