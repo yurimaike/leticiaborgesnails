@@ -15,10 +15,10 @@ describe("admin email authorizations", () => {
     }));
     expect(response.status).toBe(403);
     const body = await response.json() as { error?: { code?: string } };
-    expect(body.error?.code).toBe("EMAIL_NOT_AUTHORIZED");
+    expect(body.error?.code).toBe("REGISTRATION_CLOSED");
   });
 
-  it("lets an admin add an email and only that exact address sign up", async () => {
+  it("lets an admin authorise an email but keeps public self-registration closed", async () => {
     const admin = await signUpAndGetToken(app, { email: "admin-authorizer@example.com" });
     await executeSql("UPDATE user SET role = 'admin' WHERE id = ?", [admin.userId!]);
     const added = await fetchWithAuth(app, admin.token, "/api/email-authorizations", {
@@ -31,7 +31,9 @@ describe("admin email authorizations", () => {
       headers: { "content-type": "application/json", origin: "http://localhost:3000" },
       body: JSON.stringify({ name: "Family member", email: "family.member@example.com", password: "password1234" })
     }));
-    expect(allowed.status).toBe(200);
+    expect(allowed.status).toBe(403);
+    const allowedBody = await allowed.json() as { error?: { code?: string } };
+    expect(allowedBody.error?.code).toBe("REGISTRATION_CLOSED");
     
     const denied = await app.fetch(new Request("http://localhost/api/auth/sign-up/email", {
       method: "POST",
