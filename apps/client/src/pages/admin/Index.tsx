@@ -43,7 +43,8 @@ function AdminContent() {
   const [historyView, setHistoryView] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loyalty, setLoyalty] = useState<LoyaltyData>({ enabled: false, validityMonths: 12, rewards: [], customers: [] });
-  const [serviceChoices] = useState(["Esmaltação em gel", "Pés tradicional", "Mãos tradicional", "Manutenção"]);
+  const [serviceChoices, setServiceChoices] = useState(["Esmaltação em gel", "Pés tradicional", "Mãos tradicional", "Manutenção"]);
+  useEffect(() => { let active=true; apiFetch("/service-catalog",{auth:false,silent:true}).then(async response=>{const payload=await response.json() as Payload<{services:Array<{name:string}>}>;if(response.ok&&payload.ok&&active&&payload.data?.services)setServiceChoices(payload.data.services.map(item=>item.name));}).catch(()=>undefined);return()=>{active=false;}; }, []);
   const [redeemChoices, setRedeemChoices] = useState<Record<string, string>>({});
   const [redeemBookingChoices, setRedeemBookingChoices] = useState<Record<string, string>>({});
   const [authorisedEmails, setAuthorisedEmails] = useState<Array<{ email: string; createdAt: number; userId?: string | null; name?: string | null }>>([]);
