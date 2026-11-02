@@ -8,6 +8,9 @@ import CustomerLoyalty from "@/components/customer/CustomerLoyalty";
 
 type CustomerBooking = {
   id: string;
+  bookingCode?: string;
+  customerName?: string;
+  paymentAmountCents?: number | null;
   bookingDate: string;
   bookingTime: string;
   service: string;
@@ -25,6 +28,15 @@ type ApiPayload = {
 const statusLabel: Record<CustomerBooking["status"], string> = {
   pending: "Aguardando aprovação", confirmed: "Aprovada", rejected: "Rejeitada", cancelled: "Cancelada"
 };
+function printPaymentReceipt(booking: CustomerBooking) {
+  if (booking.paymentStatus !== "paid" || !booking.paymentAmountCents || !booking.bookingCode) return;
+  const safe = (value: string) => value.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char);
+  const amount = (booking.paymentAmountCents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) return;
+  printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Comprovante de recebimento</title><style>body{font-family:Arial,sans-serif;color:#493629;max-width:720px;margin:40px auto;padding:32px;border:1px solid #eadbce}h1{color:#80634d}p{padding:8px 0;border-bottom:1px solid #eee5dc}.note{font-size:12px;color:#806c5d;margin-top:28px}@media print{body{margin:0;border:0}}</style></head><body><h1>Comprovante de recebimento</h1><p><b>Estúdio:</b> Leticia Nail Designer</p><p><b>Cliente:</b> ${safe(booking.customerName ?? "Cliente")}</p><p><b>Reserva:</b> ${safe(booking.bookingCode)}</p><p><b>Serviço(s):</b> ${safe(booking.service)}</p><p><b>Data do atendimento:</b> ${safe(booking.bookingDate)} às ${safe(booking.bookingTime)}</p><p><b>Valor recebido:</b> ${amount}</p><p><b>Data de emissão:</b> ${new Date().toLocaleDateString("pt-BR")}</p><p class="note">Comprovante de recebimento emitido pelo estabelecimento. Este documento não substitui nota fiscal eletrônica.</p><script>window.onload=function(){window.print()}</script></body></html>`);
+  printWindow.document.close();
+}
 function dateLabel(date: string) {
   const parsed = new Date(`${date}T12:00:00`);
   return Number.isNaN(parsed.getTime()) ? date : new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(parsed);
@@ -100,7 +112,7 @@ export default function MyBookingsPage() {
           {!shouldLoad && bookings.length > 0 && <div className="mt-8 grid gap-4">{bookings.map(booking => (
             <article key={booking.id} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 className="font-display text-xl">{booking.service}</h2><p className="mt-2 text-muted-foreground">{dateLabel(booking.bookingDate)} · {booking.bookingTime}</p></div><span className="rounded-full bg-secondary px-3 py-1 text-sm text-secondary-foreground">{statusLabel[booking.status]}</span></div>
-              <div className="mt-4 grid gap-2 rounded-xl bg-secondary/50 p-4 text-sm"><p><strong>Pagamento:</strong> {booking.paymentStatus === "paid" ? "Pago" : "Aguardando pagamento"}</p><p><strong>Atendimento:</strong> {booking.completedAt ? "Concluído" : "Ainda não concluído"}</p></div>
+              <div className="mt-4 grid gap-2 rounded-xl bg-secondary/50 p-4 text-sm"><p><strong>Pagamento:</strong> {booking.paymentStatus === "paid" ? "Pago" : "Aguardando pagamento"}</p>{booking.paymentStatus === "paid" && booking.paymentAmountCents && booking.bookingCode && <button type="button" className="mt-2 text-primary underline" onClick={() => printPaymentReceipt(booking)}>Baixar comprovante PDF</button>}<p><strong>Atendimento:</strong> {booking.completedAt ? "Concluído" : "Ainda não concluído"}</p></div>
               {(booking.status === "pending" || booking.status === "confirmed") && <a className="mt-5 inline-flex min-h-11 items-center rounded-full border border-primary/30 px-5 text-sm text-primary hover:bg-primary/5" href={whatsappLink(`Olá, gostaria de solicitar o cancelamento do meu horário de ${booking.service}, em ${dateLabel(booking.bookingDate)} às ${booking.bookingTime}.`)} target="_blank" rel="noreferrer">Solicitar cancelamento pelo WhatsApp</a>}
             </article>
           ))}</div>}
