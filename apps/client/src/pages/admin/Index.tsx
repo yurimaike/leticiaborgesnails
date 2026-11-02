@@ -42,7 +42,7 @@ function AdminContent() {
   const [historyView, setHistoryView] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loyalty, setLoyalty] = useState<LoyaltyData>({ enabled: false, validityMonths: 12, rewards: [], customers: [] });
-  const [serviceChoices] = useState(["Manicure e pedicure", "Esmaltação em gel", "Banho de gel", "Manutenção"]);
+  const [serviceChoices] = useState(["Esmaltação em gel", "Pés tradicional", "Mãos tradicional", "Manutenção"]);
   const [redeemChoices, setRedeemChoices] = useState<Record<string, string>>({});
   const [redeemBookingChoices, setRedeemBookingChoices] = useState<Record<string, string>>({});
   const [authorisedEmails, setAuthorisedEmails] = useState<Array<{ email: string; createdAt: number; userId?: string | null; name?: string | null }>>([]);
