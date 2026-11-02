@@ -125,7 +125,7 @@ describe("admin email authorizations", () => {
         customerEmail: email,
         customerPhone: "51999999999",
         bookingDate,
-        bookingTime: "19:00",
+        bookingTime: "18:30",
         service: "Mãos tradicional"
       })
     }));
