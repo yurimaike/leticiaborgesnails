@@ -34,11 +34,18 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
     return c.json(apiFailure("REGISTRATION_CLOSED", "O cadastro é feito somente pelo administrador."), 403);
   }
 
-  // A temporary-password account may only inspect its session, sign out, or
-  // change its password. Clear the flag only after Better Auth confirms success.
+  // A temporary-password account may inspect its session, sign out, change
+  // its password, or submit a fresh email/password sign-in. The last exception
+  // is required when the browser still sends an older session while the user
+  // is re-authenticating with the temporary password. The sign-in handler still
+  // verifies the password and the authorised-email check below remains active.
+  // Clear the flag only after Better Auth confirms a successful password change.
   const isPasswordChange = c.req.method === "POST" && authPath === "/api/auth/change-password";
+  const isTemporaryPasswordSignIn =
+    c.req.method === "POST" && authPath === "/api/auth/sign-in/email";
   const isAllowedFirstLoginAuthPath =
     isPasswordChange ||
+    isTemporaryPasswordSignIn ||
     (c.req.method === "POST" && authPath === "/api/auth/sign-out") ||
     ((c.req.method === "GET" || c.req.method === "POST") && authPath === "/api/auth/get-session");
   const activeSession = await getAuth().api.getSession({ headers: c.req.raw.headers }).catch(() => null);
