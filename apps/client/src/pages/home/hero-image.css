@@ -1,0 +1,5 @@
+.hero-image-card img {
+  object-fit: contain;
+  object-position: center;
+  background: var(--sand);
+}
