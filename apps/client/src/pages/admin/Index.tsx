@@ -8,6 +8,7 @@ import FinancePanel from "@/components/admin/FinancePanel";
 import ServicePricesPanel from "@/components/admin/ServicePricesPanel";
 import ServiceCatalogPanel from "@/components/admin/ServiceCatalogPanel";
 import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
+import SalonSettingsPanel from "@/components/admin/SalonSettingsPanel";
 
 type Booking = {
   id: string;
@@ -316,6 +317,7 @@ function AdminContent() {
             </div>
           </div>
 
+          <SalonSettingsPanel />
           <ServiceCatalogPanel />
           <ServicePricesPanel />
 

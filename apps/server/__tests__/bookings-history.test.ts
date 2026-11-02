@@ -29,6 +29,7 @@ describe("customer booking history access", () => {
   it("associates new reservations only when the verified account email matches the booking email", async () => {
     const { executeSql } = await import("../_core/db");
     const execute = vi.mocked(executeSql);
+    execute.mockResolvedValueOnce({ rows: [{ is_open: 1, opening_time: "08:00", closing_time: "19:00" }] } as never);
     execute.mockResolvedValueOnce({ rows: [{ name: "Mãos tradicional" }] } as never);
     execute.mockResolvedValueOnce({ rowsAffected: 1, rows: [] } as never);
     const { createBooking } = await import("../services/bookings");
@@ -50,6 +51,7 @@ describe("customer booking history access", () => {
   it("maps only the active time-slot unique constraint to a booking conflict", async () => {
     const { executeSql } = await import("../_core/db");
     const execute = vi.mocked(executeSql);
+    execute.mockResolvedValueOnce({ rows: [{ is_open: 1, opening_time: "08:00", closing_time: "19:00" }] } as never);
     execute.mockResolvedValueOnce({ rows: [{ name: "Mãos tradicional" }] } as never);
     execute.mockRejectedValueOnce(new Error("UNIQUE constraint failed: bookings.bookingDate, bookings.bookingTime"));
     const { createBooking } = await import("../services/bookings");
@@ -63,6 +65,7 @@ describe("customer booking history access", () => {
     };
 
     await expect(createBooking(input)).rejects.toMatchObject({ code: "SLOT_UNAVAILABLE", status: 409 });
+    execute.mockResolvedValueOnce({ rows: [{ is_open: 1, opening_time: "08:00", closing_time: "19:00" }] } as never);
     execute.mockResolvedValueOnce({ rows: [{ name: "Mãos tradicional" }] } as never);
     execute.mockRejectedValueOnce(new Error("UNIQUE constraint failed: bookings.bookingCode"));
     await expect(createBooking(input)).rejects.toThrow("UNIQUE constraint failed: bookings.bookingCode");

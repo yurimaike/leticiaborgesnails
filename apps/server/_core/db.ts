@@ -17,7 +17,10 @@ export type DatabaseErrorCode =
   | "DATABASE_QUERY_FAILED"
   | "INVALID_INPUT"
   | "SLOT_UNAVAILABLE"
-  | "BOOKING_NOT_PENDING";
+  | "BOOKING_NOT_PENDING"
+  | "SETTINGS_NOT_FOUND"
+  | "SALON_CLOSED"
+  | "OUTSIDE_OPENING_HOURS";
 
 export class DatabaseError extends Error {
   constructor(
