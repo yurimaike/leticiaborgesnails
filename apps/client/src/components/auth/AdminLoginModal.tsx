@@ -58,6 +58,25 @@ export default function AdminLoginModal({ open, onOpenChange }: AdminLoginModalP
       }
       syncAuthTokenFromResult(result);
 
+      // A temporary-password account is intentionally blocked from profile
+      // endpoints until the user chooses a personal password. Check this
+      // narrow status endpoint first so first access can complete safely.
+      const statusResponse = await apiFetch("/account/first-login-status", { silent: true });
+      const status = (await statusResponse.json().catch(() => null)) as {
+        ok?: boolean;
+        data?: { mustChangePassword?: boolean };
+      } | null;
+      if (!statusResponse.ok || !status?.ok) {
+        setError("Não foi possível verificar a situação do primeiro acesso. Tente novamente.");
+        return;
+      }
+      if (status.data?.mustChangePassword) {
+        setPassword("");
+        onOpenChange(false);
+        navigate("/trocar-senha", { replace: true, state: { returnToAdmin: true } });
+        return;
+      }
+
       // The role is read from the authenticated server session. Never trust a
       // role sent by the browser or stored in localStorage.
       const profileResponse = await apiFetch("/me/profile", { silent: true });
