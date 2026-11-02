@@ -72,7 +72,7 @@ export type SignedUpUser = {
 // A monotonic counter + timestamp ensures emails are unique across calls in
 // the same test process.
 export async function signUpAndGetToken(
-  app: { fetch: (req: Request) => Promise<Response> },
+  _app: { fetch: (req: Request) => Promise<Response> },
   overrides: { email?: string; password?: string; name?: string } = {}
 ): Promise<SignedUpUser> {
   signupCounter += 1;
