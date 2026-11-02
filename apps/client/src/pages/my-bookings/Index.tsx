@@ -82,7 +82,7 @@ export default function MyBookingsPage() {
               <h2 className="font-display text-2xl">Consultar reserva</h2>
               <form className="mt-6 grid gap-4" onSubmit={lookupGuest}>
                 <label className="grid gap-2 text-sm font-medium" htmlFor="booking-access-code">Código da reserva</label>
-                <input id="booking-access-code" className="min-h-12 w-full min-w-0 rounded-xl border border-input bg-background px-4 font-mono uppercase tracking-wider" autoComplete="off" placeholder="LET-XXXXXXXX" required minLength={12} maxLength={12} pattern="LET-[A-Fa-f0-9]{8}" value={bookingCode} onChange={event => setBookingCode(event.target.value.toUpperCase().replace(/[^A-F0-9-]/g, "").slice(0, 12))} />
+                <input id="booking-access-code" className="min-h-12 w-full min-w-0 rounded-xl border border-input bg-background px-4 font-mono uppercase tracking-wider" autoComplete="off" placeholder="LET-XXXXXXXX" required minLength={12} maxLength={12} pattern="LET-[A-Fa-f0-9]{8}" value={bookingCode} onChange={event => setBookingCode(event.target.value.toUpperCase().replace(/[^LET0-9A-F-]/g, "").slice(0, 12))} />
                 <button className="min-h-12 w-fit rounded-full bg-primary px-6 text-primary-foreground disabled:opacity-60" type="submit" disabled={loading}>{loading ? "Consultando…" : "Consultar reserva"}</button>
               </form>
               {!session?.user && <p className="mt-5 text-sm text-muted-foreground">Também pode <Link className="text-primary underline" to="/auth">entrar ou criar uma conta</Link>.</p>}
