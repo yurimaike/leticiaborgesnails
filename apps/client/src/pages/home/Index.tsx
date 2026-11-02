@@ -10,6 +10,14 @@ const Index = () => {
       title="Nail Designer Leticia | Manicure e pedicure em Nova Tramandaí"
       description="Manicure, pedicure, esmaltação em gel, banho de gel e manutenção com Leticia Borges em Nova Tramandaí."
     >
+      <div className="anime-heart-sparkles" aria-hidden="true">
+        <span className="anime-particle heart heart-1">♥</span><span className="anime-particle sparkle sparkle-2">✦</span>
+        <span className="anime-particle heart heart-3">♡</span><span className="anime-particle sparkle sparkle-4">✧</span>
+        <span className="anime-particle heart heart-5">♥</span><span className="anime-particle sparkle sparkle-6">✦</span>
+        <span className="anime-particle heart heart-7">♡</span><span className="anime-particle sparkle sparkle-8">✧</span>
+        <span className="anime-particle heart heart-9">♥</span><span className="anime-particle sparkle sparkle-10">✦</span>
+        <span className="anime-particle heart heart-11">♡</span><span className="anime-particle sparkle sparkle-12">✧</span>
+      </div>
       <main>
         <section className="hero-section section-shell">
           <div className="hero-copy">
