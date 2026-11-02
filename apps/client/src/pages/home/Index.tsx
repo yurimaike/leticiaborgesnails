@@ -1,3 +1,4 @@
+import "./hero-image.css";
 import { ArrowUpRight, CalendarDays, Camera, Check, Clock3, Heart, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import SiteLayout from "../../site/SiteLayout";
