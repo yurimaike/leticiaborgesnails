@@ -73,6 +73,11 @@ export const withSession: MiddlewareHandler = async (c, next) => {
     throw error;
   }
 
+  const pathname = new URL(c.req.url).pathname;
+  if (authUser?.mustChangePassword && pathname !== "/api/account/first-login-status") {
+    return c.json(apiFailure("PASSWORD_CHANGE_REQUIRED", "Altere sua senha temporária antes de continuar."), 403);
+  }
+
   c.set("user", authUser);
   c.set("session", authSession);
 
@@ -89,7 +94,8 @@ async function hydrateUserFromDatabase(authUser: AuthUser | null): Promise<AuthU
       role: userTable.role,
       email: userTable.email,
       emailVerified: userTable.emailVerified,
-      username: userTable.username
+      username: userTable.username,
+      mustChangePassword: userTable.mustChangePassword
     })
     .from(userTable)
     .where(eq(userTable.id, authUser.id))
@@ -117,6 +123,7 @@ async function hydrateUserFromDatabase(authUser: AuthUser | null): Promise<AuthU
     ...authUser,
     emailVerified: Boolean(row.emailVerified),
     role: row.role === "admin" ? "admin" : "user",
-    username: row.username ?? undefined
+    username: row.username ?? undefined,
+    mustChangePassword: Boolean(row.mustChangePassword)
   };
 }
