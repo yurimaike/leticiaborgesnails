@@ -33,7 +33,7 @@ export default function MyBookingsPage() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
   const isVerifiedAccount = Boolean(session?.user?.emailVerified);
   const [accountBookings, setAccountBookings] = useState<CustomerBooking[]>([]);
-  const [bookingCode, setBookingCode] = useState("");
+  const [bookingCode, setBookingCode] = useState("LET-");
   const [guestBooking, setGuestBooking] = useState<(CustomerBooking & { bookingCode: string }) | null>(null);
   const [guestLoyalty, setGuestLoyalty] = useState<LoyaltyData | undefined>(undefined);
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function MyBookingsPage() {
               <h2 className="font-display text-2xl">Consultar reserva</h2>
               <form className="mt-6 grid gap-4" onSubmit={lookupGuest}>
                 <label className="grid gap-2 text-sm font-medium" htmlFor="booking-access-code">Código da reserva</label>
-                <input id="booking-access-code" className="min-h-12 w-full min-w-0 rounded-xl border border-input bg-background px-4 font-mono uppercase tracking-wider" autoComplete="off" placeholder="LET-XXXXXXXX" required minLength={12} maxLength={12} pattern="LET-[A-Fa-f0-9]{8}" value={bookingCode} onChange={event => setBookingCode(event.target.value.toUpperCase().replace(/[^LET0-9A-F-]/g, "").slice(0, 12))} />
+                <input id="booking-access-code" className="min-h-12 w-full min-w-0 rounded-xl border border-input bg-background px-4 font-mono uppercase tracking-wider" autoComplete="off" placeholder="LET-XXXXXXXX" required minLength={12} maxLength={12} pattern="LET-[A-Fa-f0-9]{8}" value={bookingCode} onChange={event => { const entered = event.target.value.toUpperCase().replace(/^LET-?/, ""); const suffix = entered.replace(/[^A-F0-9]/g, "").slice(0, 8); setBookingCode(`LET-${suffix}`); }} />
                 <button className="min-h-12 w-fit rounded-full bg-primary px-6 text-primary-foreground disabled:opacity-60" type="submit" disabled={loading}>{loading ? "Consultando…" : "Consultar reserva"}</button>
               </form>
               {!session?.user && <p className="mt-5 text-sm text-muted-foreground">Também pode <Link className="text-primary underline" to="/auth">entrar ou criar uma conta</Link>.</p>}
@@ -91,7 +91,7 @@ export default function MyBookingsPage() {
           {notice && <p className="mt-6 rounded-xl bg-secondary p-4 text-sm text-secondary-foreground" role="status">{notice}</p>}
           {error && <p className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-destructive" role="alert">{error}</p>}
           {shouldLoad && <p className="mt-10" role="status">Carregando suas reservas…</p>}
-          {!shouldLoad && !isVerifiedAccount && guestBooking && <button className="mt-5 text-sm text-primary underline" type="button" onClick={() => { setGuestBooking(null); setGuestLoyalty(undefined); setBookingCode(""); setNotice(""); }}>Consultar outro código</button>}
+          {!shouldLoad && !isVerifiedAccount && guestBooking && <button className="mt-5 text-sm text-primary underline" type="button" onClick={() => { setGuestBooking(null); setGuestLoyalty(undefined); setBookingCode("LET-"); setNotice(""); }}>Consultar outro código</button>}
           {!shouldLoad && bookings.length === 0 && isVerifiedAccount && <section className="mt-8 rounded-2xl border border-border bg-card p-7"><h2 className="font-display text-2xl">Nenhuma reserva encontrada</h2><p className="mt-2 text-muted-foreground">Faça uma nova reserva para continuar.</p><Link className="mt-6 inline-flex min-h-11 items-center rounded-full bg-primary px-6 text-primary-foreground" to="/agenda">Agendar horário</Link></section>}
           {!shouldLoad && bookings.length > 0 && <div className="mt-8 grid gap-4">{bookings.map(booking => (
             <article key={booking.id} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
