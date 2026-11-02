@@ -26,7 +26,7 @@ const parseAmount = (value: string) => {
   if (!/^\d+(?:,\d{1,2})?$/.test(normalized)) return Number.NaN;
   return Math.round(Number(normalized.replace(",", ".")) * 100);
 };
-const cleanTextInput = (value: string) => value.replace(/[\u0000-\u001F\u007F]/g, "");
+const cleanTextInput = (value: string) => Array.from(value).filter(character => { const code = character.codePointAt(0) ?? 0; return code > 31 && (code < 127 || code > 159); }).join("");
 
 export default function FinancePanel() {
   const [data, setData] = useState<FinanceData>({ incomeCents: 0, expenseCents: 0, balanceCents: 0, transactions: [] });
