@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { DatabaseError, executeSql } from "../_core/db";
 
 export const BOOKING_TIMES = ["08:00", "09:30", "11:00", "13:00", "14:30", "16:00", "17:30", "19:00"] as const;
-export const BOOKING_SERVICES = ["Manicure e pedicure", "Esmaltação em gel", "Banho de gel", "Manutenção"] as const;
+export const BOOKING_SERVICES = ["Esmaltação em gel", "Pés tradicional", "Mãos tradicional", "Manutenção"] as const;
 export type BookingInput = { customerName:string; customerEmail:string; customerPhone:string; bookingDate:string; bookingTime:typeof BOOKING_TIMES[number]; service:typeof BOOKING_SERVICES[number] | typeof BOOKING_SERVICES[number][] };
 function validDate(s:string) { if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false; const d=new Date(`${s}T12:00:00`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0,10)===s; }
 function ensureDateTime(date:string,time:string) { if(!validDate(date)) throw new DatabaseError("INVALID_INPUT","Data inválida.",400); const target=new Date(`${date}T${time}:00-03:00`); if(target.getTime()<=Date.now()) throw new DatabaseError("INVALID_INPUT","Escolha uma data e horário futuros.",400); }
