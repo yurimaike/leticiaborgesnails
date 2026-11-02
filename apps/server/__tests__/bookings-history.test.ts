@@ -13,12 +13,12 @@ describe("customer booking history access", () => {
   it("uses only the verified account id and normalized verified email as query scope", async () => {
     const { executeSql } = await import("../_core/db");
     const execute = vi.mocked(executeSql);
-    execute.mockResolvedValue({ rows: [{ id: "booking-1", service: "Manicure e pedicure" }] } as never);
+    execute.mockResolvedValue({ rows: [{ id: "booking-1", service: "Mãos tradicional" }] } as never);
     const { listCustomerBookings } = await import("../services/bookings");
 
     const rows = await listCustomerBookings("account-1", " Client@Example.com ");
 
-    expect(rows).toEqual([{ id: "booking-1", service: "Manicure e pedicure" }]);
+    expect(rows).toEqual([{ id: "booking-1", service: "Mãos tradicional" }]);
     expect(execute).toHaveBeenCalledWith(
       expect.stringContaining("WHERE userId = ? OR (userId IS NULL AND lower(customerEmail) = ?)") ,
       ["account-1", "client@example.com"]
@@ -37,7 +37,7 @@ describe("customer booking history access", () => {
       customerPhone: "51999990000",
       bookingDate: "2099-12-30",
       bookingTime: "09:30" as const,
-      service: "Manicure e pedicure" as const
+      service: "Mãos tradicional" as const
     };
 
     await createBooking(booking, { id: "account-1", email: "outro@example.com" });
@@ -57,7 +57,7 @@ describe("customer booking history access", () => {
       customerPhone: "51999990000",
       bookingDate: "2099-12-30",
       bookingTime: "09:30" as const,
-      service: "Manicure e pedicure" as const
+      service: "Mãos tradicional" as const
     };
 
     await expect(createBooking(input)).rejects.toMatchObject({ code: "SLOT_UNAVAILABLE", status: 409 });
