@@ -4,6 +4,7 @@ import { BookOpen, ChevronLeft, ChevronRight, CircleHelp, X } from "lucide-react
 const STORAGE_KEY = "leticia-admin-guide-v2";
 
 const lessons = [
+  { title: "Editor do catálogo de serviços", text: "Na área Editor do catálogo de serviços, pode adicionar um serviço, editar nome e descrição, mudar a ordem e ocultar ou mostrar serviços. As alterações são guardadas no sistema e actualizam o catálogo público e a agenda. Ocultar um serviço não apaga reservas antigas. Os preços são alterados separadamente em Preços dos serviços." },
   { title: "Bem-vinda ao painel", text: "Este painel reúne as ferramentas para administrar o estúdio. Use as explicações para conhecer cada área. Você pode fechar o guia e abri-lo novamente pelo botão Ajuda." },
   { title: "Resumo e atualização", text: "No início, os cartões mostram o total de reservas, quantas aguardam aprovação e quantas estão confirmadas. Use Atualizar agenda para buscar os dados mais recentes." },
   { title: "Financeiro", text: "A área Financeiro ajuda a acompanhar receitas e despesas registradas no sistema. Confira os lançamentos e os valores antes de tomar decisões. Marcar um pagamento na reserva também pode gerar o lançamento de receita correspondente." },
