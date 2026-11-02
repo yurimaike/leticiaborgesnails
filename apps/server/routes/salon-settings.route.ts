@@ -7,8 +7,8 @@ import { adminRoute, publicRoute } from "../_core/route-helpers";
 export const salonSettingsRouter = new Hono();
 const updateSchema = z.object({
   isOpen: z.boolean().optional(),
-  openingTime: z.string().regex(/^([01]\\d|2[0-3]):[0-5]\\d$/).optional(),
-  closingTime: z.string().regex(/^([01]\\d|2[0-3]):[0-5]\\d$/).optional()
+  openingTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional(),
+  closingTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).optional()
 }).refine(value => Object.keys(value).length > 0, "Informe ao menos uma alteração.");
 async function readSettings() {
   const result = await executeSql("SELECT is_open, opening_time, closing_time, updated_at FROM salon_settings WHERE id=1 LIMIT 1");
