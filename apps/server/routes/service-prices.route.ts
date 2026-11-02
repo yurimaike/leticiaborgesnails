@@ -20,7 +20,8 @@ function fail(c: any, error: unknown) {
 servicePricesRouter.get("/", publicRoute, async c => {
   try {
     const result = await executeSql("SELECT serviceName,priceCents,updatedAt FROM service_prices ORDER BY serviceName");
-    return c.json(apiSuccess({ services: result.rows.map(row => ({ serviceName: String(row.serviceName), priceCents: row.priceCents == null ? null : Number(row.priceCents), updatedAt: row.updatedAt })) }));
+    const activeNames = new Set<string>(BOOKING_SERVICES);
+    return c.json(apiSuccess({ services: result.rows.filter(row => activeNames.has(String(row.serviceName))).map(row => ({ serviceName: String(row.serviceName), priceCents: row.priceCents == null ? null : Number(row.priceCents), updatedAt: row.updatedAt })) }));
   } catch (error) { return fail(c, error); }
 });
 
