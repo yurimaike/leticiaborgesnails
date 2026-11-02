@@ -52,7 +52,7 @@ function assertConfigured() {
   }
 }
 
-function getClient() {
+export function getClient() {
   assertConfigured();
 
   if (!client) {
