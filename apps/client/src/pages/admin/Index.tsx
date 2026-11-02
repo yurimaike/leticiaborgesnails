@@ -105,6 +105,15 @@ function AdminContent() {
     }
   }
 
+  async function copyTemporaryPassword() {
+    if (!provisionedCredentials) return;
+    try {
+      await navigator.clipboard.writeText(provisionedCredentials.temporaryPassword);
+    } catch {
+      setError("Não foi possível copiar automaticamente. Selecione e copie a senha exibida.");
+    }
+  }
+
   async function removeAuthorisedEmail(email: string) {
     if (!window.confirm(`Remover a autorização de ${email}? A pessoa perderá o acesso autenticado às áreas internas e as sessões serão encerradas. A conta não será apagada; ela ainda poderá usar o site como cliente e fazer reservas públicas.`)) return;
     try {
@@ -302,7 +311,7 @@ function AdminContent() {
               <input type="email" required maxLength={254} value={authorisedEmailInput} onChange={event => setAuthorisedEmailInput(event.target.value)} placeholder="nome@gmail.com" className="min-w-0 rounded-xl border border-[#dfcdbd] bg-white px-4 py-3 text-sm text-[#493629] outline-none focus:border-[#a77d60]" />
               <button type="submit" className="rounded-full bg-[#705844] px-5 py-3 text-sm font-semibold text-white">Criar conta e gerar senha</button>
             </form>
-            {provisionedCredentials && <div className="mt-4 rounded-2xl border border-[#d9c4b1] bg-[#fbf6f0] p-4 text-sm text-[#493629]"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">Conta criada para {provisionedCredentials.name}</p><p className="mt-1">{provisionedCredentials.email}</p></div><button type="button" onClick={() => setProvisionedCredentials(null)} className="rounded-full border border-[#d9c4b1] bg-white px-3 py-1 text-xs font-semibold">Fechar</button></div><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#806c5d]">Senha temporária — mostrar apenas agora</p><code className="mt-1 block break-all rounded-lg bg-white p-3 text-base">{provisionedCredentials.temporaryPassword}</code><button type="button" onClick={() => void navigator.clipboard.writeText(provisionedCredentials.temporaryPassword)} className="mt-3 rounded-full bg-[#705844] px-4 py-2 text-xs font-semibold text-white">Copiar senha temporária</button><p className="mt-2 text-xs text-[#806c5d]">A pessoa deverá alterar a senha no primeiro acesso. Não feche esta mensagem antes de copiar e guardar a senha.</p></div>}
+            {provisionedCredentials && <div className="mt-4 rounded-2xl border border-[#d9c4b1] bg-[#fbf6f0] p-4 text-sm text-[#493629]"><div className="flex items-start justify-between gap-3"><div><p className="font-semibold">Conta criada para {provisionedCredentials.name}</p><p className="mt-1">{provisionedCredentials.email}</p></div><button type="button" onClick={() => setProvisionedCredentials(null)} className="rounded-full border border-[#d9c4b1] bg-white px-3 py-1 text-xs font-semibold">Fechar</button></div><p className="mt-3 text-xs font-semibold uppercase tracking-wide text-[#806c5d]">Senha temporária — mostrar apenas agora</p><code className="mt-1 block break-all rounded-lg bg-white p-3 text-base">{provisionedCredentials.temporaryPassword}</code><button type="button" onClick={() => void copyTemporaryPassword()} className="mt-3 rounded-full bg-[#705844] px-4 py-2 text-xs font-semibold text-white">Copiar senha temporária</button><p className="mt-2 text-xs text-[#806c5d]">A pessoa deverá alterar a senha no primeiro acesso. Não feche esta mensagem antes de copiar e guardar a senha.</p></div>}
             <div className="mt-4 space-y-2">
               {authorisedEmails.map(item => <div key={item.email} className="flex flex-col gap-2 rounded-xl border border-[#eaded3] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"><span className="break-all text-sm text-[#493629]">{item.email}</span><button type="button" onClick={() => void removeAuthorisedEmail(item.email)} className="w-fit rounded-full border border-[#e3c8c0] px-3 py-1.5 text-xs font-semibold text-[#9b594c]">Remover autorização</button></div>)}
               {authorisedEmails.length === 0 && <p className="rounded-xl bg-[#fbf6f0] px-4 py-5 text-sm text-[#8c7767]">Nenhum e-mail autorizado ainda.</p>}
