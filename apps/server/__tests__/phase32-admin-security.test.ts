@@ -93,6 +93,31 @@ describe("fase 32 — autorização administrativa real no servidor", () => {
     expect((await fetchWithAuth(app, account.token, "/api/bookings/admin")).status).toBe(401);
   });
 
+
+  it("permite reautenticar com senha temporária mesmo quando o navegador envia uma sessão pendente antiga", async () => {
+    const account = await signUpAndGetToken(app, { email: "temporary-admin@example.com" });
+    await executeSql("UPDATE user SET mustChangePassword = 1 WHERE id = ?", [account.userId!]);
+
+    // Reproduce the browser sending its existing session while signing in again.
+    const response = await app.fetch(new Request("http://localhost/api/auth/sign-in/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        origin: "http://localhost:3000",
+        Authorization: `Bearer ${account.token}`
+      },
+      body: JSON.stringify({ email: account.email, password: account.password })
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-auth-token")).toBeTruthy();
+
+    // The temporary-password restriction remains active for protected APIs.
+    const newToken = response.headers.get("set-auth-token")!;
+    expect((await fetchWithAuth(app, newToken, "/api/me/profile")).status).toBe(403);
+    expect((await fetchWithAuth(app, newToken, "/api/account/first-login-status")).status).toBe(200);
+  });
+
   it("token inventado pelo navegador não concede acesso", async () => {
     expect((await fetchWithAuth(app, "forged-admin-token", "/api/bookings/admin")).status).toBe(401);
   });
