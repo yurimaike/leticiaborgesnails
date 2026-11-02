@@ -34,6 +34,25 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
     return c.json(apiFailure("REGISTRATION_CLOSED", "O cadastro é feito somente pelo administrador."), 403);
   }
 
+  // A temporary-password account may only inspect its session, sign out, or
+  // change its password. Clear the flag only after Better Auth confirms success.
+  const isPasswordChange = c.req.method === "POST" && authPath === "/api/auth/change-password";
+  const isAllowedFirstLoginAuthPath =
+    isPasswordChange ||
+    (c.req.method === "POST" && authPath === "/api/auth/sign-out") ||
+    (c.req.method === "GET" && authPath === "/api/auth/get-session");
+  const activeSession = await getAuth().api.getSession({ headers: c.req.raw.headers }).catch(() => null);
+  const activeUserId = activeSession?.user?.id;
+  if (activeUserId && !isAllowedFirstLoginAuthPath) {
+    const pending = await (await import("./db")).executeSql(
+      "SELECT mustChangePassword FROM user WHERE id = ? LIMIT 1",
+      [activeUserId]
+    );
+    if (Number(pending.rows[0]?.mustChangePassword ?? 0) === 1) {
+      return c.json(apiFailure("PASSWORD_CHANGE_REQUIRED", "Altere sua senha temporária antes de continuar."), 403);
+    }
+  }
+
   // Email/password sign-in requires current administrator authorisation.
   if (c.req.method === "POST" && authPath === "/api/auth/sign-in/email") {
     const body = await c.req.raw.clone().json().catch(() => null) as { email?: unknown } | null;
@@ -48,7 +67,12 @@ app.on(["GET", "POST"], "/api/auth/*", async (c) => {
     }
   }
 
-  return getAuth().handler(c.req.raw);
+  const response = await getAuth().handler(c.req.raw);
+  if (isPasswordChange && response.ok && activeUserId) {
+    const { executeSql } = await import("./db");
+    await executeSql("UPDATE user SET mustChangePassword = 0 WHERE id = ?", [activeUserId]);
+  }
+  return response;
 });
 app.use("/api/*", withSession);
 
