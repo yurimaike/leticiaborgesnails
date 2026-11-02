@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CalendarDays, Check, Clock3, Mail, Phone, RefreshCw, ShieldCheck, X } from "lucide-react";
+import { CalendarDays, Check, ChevronDown, Clock3, LayoutGrid, Mail, Phone, RefreshCw, ShieldCheck, X } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import SiteLayout from "../../site/SiteLayout";
@@ -36,6 +36,7 @@ const statusLabels: Record<string, string> = {
 };
 
 function AdminContent() {
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
   const [items, setItems] = useState<Booking[]>([]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -300,22 +301,45 @@ function AdminContent() {
             </button>
           </div>
 
-          <nav aria-label="Navegação do painel administrativo" className="sticky top-2 z-30 mb-6 -mx-1 rounded-2xl border border-[#e8d9cb] bg-[#fffdfa]/95 p-2 shadow-[0_8px_24px_rgba(92,65,43,0.08)] backdrop-blur">
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {[
-                ["overview", "Resumo"],
-                ["operating", "Funcionamento"],
-                ["services", "Serviços"],
-                ["finance", "Financeiro"],
-                ["loyalty", "Fidelidade"],
-                ["team", "Equipa"],
-                ["bookings", "Reservas"],
-              ].map(([id, label]) => (
-                <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold text-[#705844] transition hover:bg-[#f2e8de] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]">
-                  {label}
-                </a>
-              ))}
-            </div>
+          <nav aria-label="Acesso rápido do painel administrativo" className="sticky top-2 z-30 mb-6 -mx-1 rounded-2xl border border-[#e8d9cb] bg-[#fffdfa]/95 p-3 shadow-[0_8px_24px_rgba(92,65,43,0.08)] backdrop-blur">
+            <button
+              type="button"
+              aria-expanded={adminMenuOpen}
+              aria-controls="admin-quick-links"
+              onClick={() => setAdminMenuOpen(open => !open)}
+              className="flex w-full items-center justify-between gap-3 rounded-xl px-2 py-2 text-left text-[#493629] transition hover:bg-[#f7eee6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#f2e8de] text-[#80634d]"><LayoutGrid size={19} /></span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold">Menu do painel</span>
+                  <span className="mt-0.5 block text-xs text-[#8c7767]">Acesso rápido às 7 áreas, sem procurar pela página</span>
+                </span>
+              </span>
+              <ChevronDown size={19} className={`shrink-0 text-[#80634d] transition-transform ${adminMenuOpen ? "rotate-180" : ""}`} />
+            </button>
+            {adminMenuOpen && (
+              <div id="admin-quick-links" className="mt-3 grid grid-cols-2 gap-2 border-t border-[#eee3d9] pt-3 sm:grid-cols-3 lg:grid-cols-4">
+                {[
+                  ["overview", "Resumo"],
+                  ["bookings", "Reservas"],
+                  ["operating", "Funcionamento"],
+                  ["services", "Serviços e preços"],
+                  ["finance", "Financeiro"],
+                  ["loyalty", "Fidelidade"],
+                  ["team", "Equipa e acessos"],
+                ].map(([id, label]) => (
+                  <a
+                    key={id}
+                    href={`#${id}`}
+                    onClick={() => setAdminMenuOpen(false)}
+                    className="flex min-h-11 items-center rounded-xl border border-[#eaded3] bg-white px-3 py-3 text-sm font-semibold text-[#705844] transition hover:border-[#d9c4b1] hover:bg-[#f7eee6] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"
+                  >
+                    {label}
+                  </a>
+                ))}
+              </div>
+            )}
           </nav>
 
           <AdminHelpGuide />
