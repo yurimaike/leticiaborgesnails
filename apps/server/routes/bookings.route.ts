@@ -1,5 +1,4 @@
 import { Hono, type Context } from "hono";
-import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { apiFailure, apiSuccess } from "@repo/shared/http";
 import { DatabaseError, executeSql } from "../_core/db";
@@ -8,8 +7,6 @@ import { distributedRateLimit, identityRateLimitCounter, ipRateLimitCounter } fr
 import { BOOKING_SERVICES, BOOKING_TIMES, createBooking, decideBooking, listBookings, listBusyTimes, listCustomerBookings } from "../services/bookings";
 import { notifyAdminsNewBooking, notifyBookingDecision } from "../services/booking-email";
 import { bodySizeLimit } from "../middlewares/body-size-limit";
-import { consumeGuestBookingChallenge, deleteGuestBookingChallenge, storeGuestBookingChallenge, UpstashUnavailableError } from "../services/upstash-redis";
-import { sendGuestBookingAccessCode } from "../services/message";
 
 export const bookingsRouter = new Hono();
 const bookingLookupLimit = distributedRateLimit((c) => [ipRateLimitCounter(c, "bookings:lookup", 60, 60)]);
@@ -27,9 +24,6 @@ const createSchema=z.object({customerName:z.string().trim().min(2).max(120),cust
 const decisionSchema=z.object({action:z.enum(["confirmed","rejected","cancelled"]),note:z.string().max(500).optional()});
 const guestAccessSchema=z.object({email:z.string().trim().email().max(254),code:z.string().regex(/^\d{6}$/).optional()});
 function parsedBody(c:Context){const raw=c.get("rawBody") as Uint8Array|undefined;if(!raw)return null;try{return JSON.parse(new TextDecoder().decode(raw)) as unknown;}catch{return null;}}
-function guestEmailFromRequest(c:Context){const parsed=guestAccessSchema.safeParse(parsedBody(c));return parsed.success?parsed.data.email.toLowerCase():"invalid-email";}
-const guestAccessRequestRateLimit=distributedRateLimit((c)=>{const email=guestEmailFromRequest(c);return [ipRateLimitCounter(c,"guest-booking-code:request-ip",5,3600),identityRateLimitCounter("guest-booking-code:request-email",email,3,3600),identityRateLimitCounter("guest-booking-code:cooldown",email,1,60)];});
-const guestAccessVerifyRateLimit=distributedRateLimit((c)=>{const email=guestEmailFromRequest(c);return [ipRateLimitCounter(c,"guest-booking-code:verify-ip",10,3600),identityRateLimitCounter("guest-booking-code:verify-email",email,10,3600)];});
 function fail(error:unknown,c:Context){if(error instanceof DatabaseError)return c.json(apiFailure(error.code,error.message),error.status as 400|403|404|409|502|503);throw error;}
 const lookup=async(c:Context)=>{const date=c.req.query("date");if(!date)return c.json(apiFailure("INVALID_INPUT","Informe a data AAAA-MM-DD."),400);try{return c.json(apiSuccess({date,busyTimes:await listBusyTimes(date)}));}catch(e){return fail(e,c);}};
 bookingsRouter.get("",publicRoute,bookingLookupLimit,lookup);
@@ -38,6 +32,28 @@ const create=async(c:Context)=>{const parsed=createSchema.safeParse(parsedBody(c
 bookingsRouter.post("",publicRoute,bodySizeLimit,bookingCreateLimit,create);bookingsRouter.post("/",publicRoute,bodySizeLimit,bookingCreateLimit,create);
 bookingsRouter.post("/guest-access/request-code",publicRoute,bodySizeLimit,guestAccessRequestRateLimit,async c=>{const parsed=guestAccessSchema.safeParse(parsedBody(c));if(!parsed.success)return c.json(apiFailure("INVALID_INPUT","Informe um e-mail válido."),400);const email=parsed.data.email.toLowerCase();const code=String(randomInt(100000,1000000));try{await storeGuestBookingChallenge(email,code);await sendGuestBookingAccessCode(email,code);return c.json(apiSuccess({message:"Se houver uma reserva para este endereço, enviaremos um código de acesso."}),202);}catch(error){await deleteGuestBookingChallenge(email).catch(()=>undefined);if(error instanceof UpstashUnavailableError)return c.json(apiFailure("BOOKING_ACCESS_UNAVAILABLE","A consulta está temporariamente indisponível."),503);return c.json(apiFailure("BOOKING_ACCESS_UNAVAILABLE","Não foi possível enviar o código agora. Tente novamente mais tarde."),503);}});
 bookingsRouter.post("/guest-access/verify-code",publicRoute,bodySizeLimit,guestAccessVerifyRateLimit,async c=>{const parsed=guestAccessSchema.extend({code:z.string().regex(/^\d{6}$/)}).safeParse(parsedBody(c));if(!parsed.success)return c.json(apiFailure("INVALID_INPUT","Confira o e-mail e o código de seis dígitos."),400);const email=parsed.data.email.toLowerCase();try{const valid=await consumeGuestBookingChallenge(email,parsed.data.code);if(!valid)return c.json(apiFailure("ACCESS_CODE_INVALID","O código é inválido, expirou ou já foi usado."),400);const result=await executeSql("SELECT id,bookingDate,bookingTime,service,status,createdAt,updatedAt,paymentStatus,completedAt FROM bookings WHERE lower(customerEmail) = ? ORDER BY bookingDate DESC, bookingTime DESC LIMIT 100",[email]);return c.json(apiSuccess({bookings:result.rows}),200);}catch{return c.json(apiFailure("BOOKING_ACCESS_UNAVAILABLE","A consulta está temporariamente indisponível."),503);}});
+const guestBookingCodeLimit=distributedRateLimit((c)=>[ipRateLimitCounter(c,"guest-booking-code:lookup",8,900)]);
+bookingsRouter.get("/guest-access/:bookingCode",publicRoute,guestBookingCodeLimit,async c=>{
+  const bookingCode=c.req.param("bookingCode").trim().toUpperCase();
+  if(!/^LET-[A-F0-9]{8}$/.test(bookingCode))return c.json(apiFailure("INVALID_BOOKING_CODE","Confira o código da reserva."),400);
+  try{
+    const result=await executeSql("SELECT id,bookingCode,bookingDate,bookingTime,service,status,paymentStatus,completedAt,customerEmail FROM bookings WHERE bookingCode=? LIMIT 1",[bookingCode]);
+    const booking=result.rows[0];
+    if(!booking)return c.json(apiFailure("BOOKING_NOT_FOUND","Não encontramos uma reserva com esse código."),404);
+    const email=String(booking.customerEmail).trim().toLowerCase();
+    const [settings,progress,rewards]=await Promise.all([
+      executeSql("SELECT enabled FROM loyalty_settings WHERE id=1"),
+      executeSql("SELECT COUNT(*) AS completedPaid FROM bookings WHERE lower(customerEmail)=? AND paymentStatus='paid' AND completedAt IS NOT NULL AND status IN ('confirmed','completed')",[email]),
+      executeSql("SELECT id,status,earnedAt,expiresAt,redeemedAt,redeemedService FROM loyalty_rewards WHERE lower(customerEmail)=? ORDER BY earnedAt DESC",[email])
+    ]);
+    const enabled=Boolean(settings.rows[0]?.enabled);
+    const completedPaid=Number(progress.rows[0]?.completedPaid??0);
+    return c.json(apiSuccess({
+      booking:{bookingCode:String(booking.bookingCode),bookingDate:String(booking.bookingDate),bookingTime:String(booking.bookingTime),service:String(booking.service),status:String(booking.status),paymentStatus:String(booking.paymentStatus),completedAt:booking.completedAt??null},
+      loyalty:{enabled,completedPaid,bookingsUntilReward:enabled?8-(completedPaid%8):null,rewards:rewards.rows}
+    }));
+  }catch(e){return fail(e,c);}
+});
 bookingsRouter.get("/admin",adminRoute,adminReadLimit,async c=>{try{return c.json(apiSuccess({bookings:await listBookings()}));}catch(e){return fail(e,c);}});
 bookingsRouter.get("/mine",protectedRoute,distributedRateLimit((c)=>[identityRateLimitCounter("bookings:mine",c.var.currentUser?.id,60,60)]),async c=>{const user=c.var.currentUser;if(!user.emailVerified)return c.json(apiFailure("EMAIL_NOT_VERIFIED","Verifique seu e-mail para acessar suas reservas."),403);try{return c.json(apiSuccess({bookings:await listCustomerBookings(user.id,user.email)}));}catch(e){return fail(e,c);}});
 bookingsRouter.patch("/:id/status",adminRoute,adminWriteLimit,bodySizeLimit,async c=>{const parsed=decisionSchema.safeParse(await c.req.json().catch(()=>null));if(!parsed.success)return c.json(apiFailure("INVALID_INPUT","Ação inválida."),400);try{const booking=await decideBooking(c.req.param("id"),parsed.data.action,parsed.data.note); void notifyBookingDecision(booking).catch(error=>console.error("[bookings] decision notification failed",error)); return c.json(apiSuccess({booking}));}catch(e){return fail(e,c);}});
