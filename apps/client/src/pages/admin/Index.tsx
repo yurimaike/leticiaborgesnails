@@ -5,6 +5,7 @@ import { AdminGuard } from "@/components/auth/AdminGuard";
 import SiteLayout from "../../site/SiteLayout";
 import LeticiaAIChat from "@/components/admin/LeticiaAIChat";
 import FinancePanel from "@/components/admin/FinancePanel";
+import ServicePricesPanel from "@/components/admin/ServicePricesPanel";
 import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 
 type Booking = {
@@ -312,6 +313,8 @@ function AdminContent() {
               <p className="mt-2 font-serif text-3xl text-[#66816a]">{confirmedCount}</p>
             </div>
           </div>
+
+          <ServicePricesPanel />
 
           <FinancePanel />
 

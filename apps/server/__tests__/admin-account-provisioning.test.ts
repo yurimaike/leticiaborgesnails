@@ -142,27 +142,31 @@ describe("administrator temporary password reset", () => {
     expect(newLogin.status).toBe(200);
   });
 
-  it("does not create a new account when an authorised email has no existing user", async () => {
+  it("creates the first account and temporary password for an authorised email", async () => {
     const admin = await createAdmin();
     await executeSql(
       "INSERT INTO authorized_emails (email, createdBy, createdAt) VALUES (?, ?, ?)",
-      ["not-created@example.com", admin.id, Math.floor(Date.now() / 1000)]
+      ["first-access-without-booking@example.com", admin.id, Math.floor(Date.now() / 1000)]
     );
 
     const response = await fetchWithAuth(
       app,
       admin.token,
-      "/api/email-authorizations/not-created%40example.com/reset-password",
+      "/api/email-authorizations/first-access-without-booking%40example.com/reset-password",
       { method: "POST" }
     );
 
-    expect(response.status).toBe(404);
-    await expect(response.json()).resolves.toMatchObject({
-      ok: false,
-      error: { code: "ACCOUNT_NOT_FOUND" }
-    });
-    const accountCount = await executeSql("SELECT COUNT(*) AS count FROM user WHERE lower(email) = ?", ["not-created@example.com"]);
-    expect(Number(accountCount.rows[0]?.count)).toBe(0);
+    expect(response.status).toBe(200);
+    const body = await response.json() as {
+      ok: boolean;
+      data?: { account: { id: string; email: string }; temporaryPassword: string; mustChangePassword: boolean };
+    };
+    expect(body.ok).toBe(true);
+    expect(body.data?.account.email).toBe("first-access-without-booking@example.com");
+    expect(body.data?.temporaryPassword).toBeTruthy();
+    expect(body.data?.mustChangePassword).toBe(true);
+    const accountCount = await executeSql("SELECT COUNT(*) AS count FROM user WHERE lower(email) = ?", ["first-access-without-booking@example.com"]);
+    expect(Number(accountCount.rows[0]?.count)).toBe(1);
   });
 
   it("does not allow a normal account to reset another person's password", async () => {

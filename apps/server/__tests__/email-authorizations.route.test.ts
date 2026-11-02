@@ -116,9 +116,7 @@ describe("admin email authorizations", () => {
     });
     expect(authorised.status).toBe(201);
 
-    const future = new Date();
-    future.setDate(future.getDate() + 30);
-    const bookingDate = `${future.getFullYear()}-${String(future.getMonth() + 1).padStart(2, "0")}-${String(future.getDate()).padStart(2, "0")}`;
+    const bookingDate = "2035-06-17";
     const booking = await app.fetch(new Request("http://localhost/api/bookings", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -127,7 +125,7 @@ describe("admin email authorizations", () => {
         customerEmail: email,
         customerPhone: "51999999999",
         bookingDate,
-        bookingTime: "11:00",
+        bookingTime: "19:00",
         service: "Manicure e pedicure"
       })
     }));
