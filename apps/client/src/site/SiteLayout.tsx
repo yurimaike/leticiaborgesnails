@@ -107,6 +107,7 @@ export default function SiteLayout({ children, title, description }: SiteLayoutP
             <Link to="/servicos">Serviços</Link>
             <Link to="/agenda">Agenda</Link>
             <Link to="/contato">Contato</Link>
+            <Link to="/aplicativo">Baixar aplicativo</Link>
             <a href={salonContact.instagram} target="_blank" rel="noreferrer"><Camera size={15} /> Instagram</a>
           </div>
           <div className="footer-contact">
