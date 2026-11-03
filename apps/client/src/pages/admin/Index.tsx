@@ -7,7 +7,6 @@ import LeticiaAIChat from "@/components/admin/LeticiaAIChat";
 import FinancePanel from "@/components/admin/FinancePanel";
 import ServicePricesPanel from "@/components/admin/ServicePricesPanel";
 import ServiceCatalogPanel from "@/components/admin/ServiceCatalogPanel";
-import AdminHelpGuide from "@/components/admin/AdminHelpGuide";
 import SalonSettingsPanel from "@/components/admin/SalonSettingsPanel";
 
 type Booking = {
@@ -415,8 +414,6 @@ function AdminContent() {
               {refreshing ? "Atualizando..." : "Atualizar agenda"}
             </button>
           </div>
-
-          <div style={{ display: activePage === "overview" ? undefined : "none" }}><AdminHelpGuide /></div>
 
           <div id="overview" style={{ display: activePage === "overview" ? undefined : "none" }} className="mb-7 grid scroll-mt-28 gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-[#eadbce] bg-white p-5 shadow-[0_8px_24px_rgba(92,65,43,0.05)]">
