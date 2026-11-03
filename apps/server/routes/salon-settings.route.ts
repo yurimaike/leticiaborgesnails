@@ -12,7 +12,20 @@ const updateSchema = z.object({
   closingTime: timeSchema.optional(),
   intervalMinutes: z.number().int().min(5).max(240).optional()
 }).refine(value => Object.keys(value).length > 0, "Informe ao menos uma alteração.");
+async function ensureIntervalColumn() {
+  const columns = await executeSql("PRAGMA table_info(salon_settings)");
+  if (!columns.rows.some(column => String(column.name) === "interval_minutes")) {
+    try {
+      await executeSql("ALTER TABLE salon_settings ADD COLUMN interval_minutes INTEGER NOT NULL DEFAULT 30 CHECK (interval_minutes BETWEEN 5 AND 240)");
+    } catch (error) {
+      // Another request may have applied this additive migration concurrently.
+      const refreshed = await executeSql("PRAGMA table_info(salon_settings)");
+      if (!refreshed.rows.some(column => String(column.name) === "interval_minutes")) throw error;
+    }
+  }
+}
 async function readSettings() {
+  await ensureIntervalColumn();
   const result = await executeSql("SELECT is_open, opening_time, closing_time, interval_minutes, updated_at FROM salon_settings WHERE id=1 LIMIT 1");
   if (!result.rows[0]) throw new DatabaseError("SETTINGS_NOT_FOUND", "Configuração do salão não encontrada. Aplique as migrações 012 e 013.", 503);
   const row = result.rows[0];

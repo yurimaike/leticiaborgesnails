@@ -161,6 +161,7 @@ export const salonSettings = sqliteTable("salon_settings", {
   isOpen: integer("is_open", { mode: "boolean" }).notNull().default(true),
   openingTime: text("opening_time").notNull().default("08:00"),
   closingTime: text("closing_time").notNull().default("19:00"),
+  intervalMinutes: integer("interval_minutes").notNull().default(30),
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`)
 });
 export type SalonSettings = typeof salonSettings.$inferSelect;
