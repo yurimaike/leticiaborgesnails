@@ -5,7 +5,7 @@ import { executeSql, DatabaseError } from "../_core/db";
 import { adminRoute, publicRoute } from "../_core/route-helpers";
 
 export const salonSettingsRouter = new Hono();
-const timeSchema = z.string().regex(/^([01]\\d|2[0-3]):[0-5]\\d$/);
+const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const updateSchema = z.object({
   isOpen: z.boolean().optional(),
   openingTime: timeSchema.optional(),
