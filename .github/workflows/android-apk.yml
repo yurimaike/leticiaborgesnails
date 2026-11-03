@@ -3,9 +3,8 @@ name: Build Android APK
 on:
   push:
     branches:
+      - main
       - feat/android-apk-preview
-    tags:
-      - "android-v*"
     paths:
       - "android-app/**"
       - ".github/workflows/android-apk.yml"
@@ -72,14 +71,15 @@ jobs:
           retention-days: 7
 
       - name: Prepare public download asset
-        if: startsWith(github.ref, 'refs/tags/android-v')
+        if: github.ref == 'refs/heads/main'
         run: cp android/app/build/outputs/apk/debug/app-debug.apk leticia.apk
 
       - name: Publish public GitHub Release
-        if: startsWith(github.ref, 'refs/tags/android-v')
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          name: Letícia Borges Nails ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
+          name: Letícia Borges Nails v1.0.0
+          tag_name: android-v1.0.0
+          target_commitish: main
           generate_release_notes: true
           files: android-app/leticia.apk
