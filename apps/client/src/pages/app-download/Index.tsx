@@ -19,16 +19,17 @@ export default function AppDownloadPage() {
           <div className="app-download-content">
             <Link to="/" className="app-download-back"><ArrowLeft size={16} /> Voltar ao site</Link>
             <div className="app-download-brand-icon"><Smartphone size={34} strokeWidth={1.5} /></div>
-            <p className="app-download-eyebrow">Aplicativo para Android e iPhone</p>
-            <h1>Letícia Borges <em>Nails</em></h1>
+            <p className="app-download-eyebrow">APLICATIVO GRATUITO · ANDROID E IPHONE</p>
+            <h1>Letícia Borges <em>Nails</em><br />no seu celular.</h1>
             <p className="app-download-lede">
-              Seus agendamentos e informações do salão em uma experiência prática no celular.
+              Acesse a agenda e as informações do salão pelo Android ou iPhone, com instruções simples para cada aparelho.
             </p>
             <div className="app-download-version"><span /> Versão 1.0.0 disponível</div>
             <a className="app-download-button" href={APK_URL} download>
               <ArrowDownToLine size={21} />
               <span><strong>Baixar aplicativo</strong><small>Download gratuito · arquivo APK</small></span>
             </a>
+            <a className="app-download-ios-link" href="#ios-install-title">Usa iPhone? Veja como adicionar à tela inicial <span>↓</span></a>
             <a className="app-download-release" href={RELEASE_URL} target="_blank" rel="noopener noreferrer">
               Conferir versão e arquivo no GitHub <ExternalLink size={14} />
             </a>
@@ -70,14 +71,14 @@ export default function AppDownloadPage() {
           </div>
 
           <section className="app-download-safety" aria-labelledby="ios-install-title">
-            <div className="app-download-safety-title"><Smartphone size={21} /><h2 id="ios-install-title">Tem iPhone? Veja como instalar gratuitamente</h2></div>
+            <div className="app-download-safety-title"><Smartphone size={21} /><h2 id="ios-install-title">Instalação gratuita no iPhone (iOS)</h2></div>
             <ol>
               <li><span>1</span><p>Abra <strong>https://leticiaborgesnails.pages.dev</strong> no navegador <strong>Safari</strong> do iPhone.</p></li>
               <li><span>2</span><p>Toque no botão <strong>Compartilhar</strong> (quadrado com uma seta para cima).</p></li>
               <li><span>3</span><p>Escolha <strong>Adicionar à Tela de Início</strong>. Se aparecer a opção, mantenha <strong>Abrir como App da Web</strong> ativada.</p></li>
               <li><span>4</span><p>Toque em <strong>Adicionar</strong>. O ícone Letícia Nails aparecerá na tela inicial; abra por ele para usar.</p></li>
             </ol>
-            <p className="app-download-warning"><Info size={18} /> No iPhone não se instala o arquivo APK. Esta é uma versão web instalável (PWA), gratuita e que funciona pela internet. Não é um aplicativo publicado na App Store; os agendamentos continuam no site oficial.</p>
+            <p className="app-download-warning"><Info size={18} /> No iPhone não se instala APK. O atalho abre o site oficial como um app (PWA), gratuitamente e com internet. Não é um aplicativo da App Store. Os agendamentos continuam no site oficial.</p>
           </section>
 
           <div className="app-download-trust">
