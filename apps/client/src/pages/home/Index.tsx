@@ -126,15 +126,16 @@ const Index = () => {
               <p>Acesse o site e consulte a agenda com praticidade pelo aplicativo oficial do salão.</p>
               <p className="mt-3 text-sm opacity-90"><strong>Segurança e confiança:</strong> baixe somente pelo botão oficial desta página. O aplicativo não pede Pix nem pagamento antecipado. Os pagamentos do atendimento são combinados presencialmente no salão.</p>
               <details className="mt-4 rounded-xl border border-current/15 p-4">
-                <summary className="cursor-pointer font-semibold">Como instalar no Samsung (passo a passo)</summary>
+                <summary className="cursor-pointer font-semibold">Segurança e instalação: leia antes de baixar</summary>
                 <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm">
-                  <li>Toque em <strong>Baixar Leticia.apk</strong> e aguarde o download terminar.</li>
-                  <li>Se aparecer um aviso, abra as configurações de segurança. Em celulares Samsung, o <strong>Bloqueador automático</strong> pode impedir instalações de fora da Play Store/Galaxy Store. Para instalar este APK, pode ser necessário desativá-lo temporariamente.</li>
-                  <li>Se o celular pedir, permita <strong>Instalar aplicativos desconhecidos</strong> para o navegador ou aplicativo usado para abrir o arquivo baixado.</li>
-                  <li>Abra <strong>Leticia.apk</strong> em Downloads e toque em <strong>Instalar</strong>.</li>
-                  <li>Depois da instalação, volte às configurações e reative o Bloqueador automático e retire a permissão de instalar aplicativos desconhecidos.</li>
+                  <li>Confira se você está no site oficial do salão e toque no botão <strong>Baixar Leticia.apk</strong>.</li>
+                  <li>O Android pode avisar que o arquivo foi baixado fora da Google Play. Esse aviso é uma proteção importante; ele não significa automaticamente que o arquivo seja golpe, mas também não é uma garantia de segurança.</li>
+                  <li><strong>Não desative o Bloqueador automático nem outras proteções do celular apenas para instalar este app.</strong> Se o Samsung bloquear a instalação ou você não tiver certeza, cancele e fale com o salão antes de continuar.</li>
+                  <li>Se decidir continuar e o seu aparelho permitir, abra o arquivo em Downloads e confira o nome do aplicativo antes de tocar em <strong>Instalar</strong>. Cancele se aparecer algo inesperado.</li>
+                  <li>Se você concedeu permissão para instalar aplicativos desconhecidos, retire essa permissão depois.</li>
                 </ol>
-                <p className="mt-3 text-sm">O nome das opções pode variar conforme a versão do Android. Só prossiga se tiver baixado o arquivo diretamente deste site oficial. Se não se sentir confortável, não altere as proteções do telefone.</p>
+                <p className="mt-3 text-sm"><strong>Pagamentos:</strong> este aplicativo não solicita Pix, senha bancária, código de confirmação nem pagamento antecipado. Os valores e pagamentos do atendimento são combinados diretamente com o salão, presencialmente. Nunca faça Pix para desbloquear ou instalar o app.</p>
+                <p className="mt-3 text-sm">Este app abre o site do salão e precisa de internet. Ele não é distribuído pela Google Play e não tem a mesma revisão da loja. Se preferir não instalar, continue usando o site pelo navegador.</p>
               </details>
               <p className="mt-3 text-xs opacity-80">Este app abre o site do salão; precisa de internet. Não é distribuído pela Google Play. O Android pode mostrar avisos por ser uma instalação manual.</p>
             </div>
