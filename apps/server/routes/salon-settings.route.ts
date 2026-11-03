@@ -16,7 +16,7 @@ async function readSettings() {
   const result = await executeSql("SELECT is_open, opening_time, closing_time, interval_minutes, updated_at FROM salon_settings WHERE id=1 LIMIT 1");
   if (!result.rows[0]) throw new DatabaseError("SETTINGS_NOT_FOUND", "Configuração do salão não encontrada. Aplique as migrações 012 e 013.", 503);
   const row = result.rows[0];
-  return { isOpen: Number(row.is_open) === 1, openingTime: String(row.opening_time), closingTime: String(row.closing_time), intervalMinutes: Number(row.interval_minutes ?? 90), updatedAt: row.updated_at ?? null };
+  return { isOpen: Number(row.is_open) === 1, openingTime: String(row.opening_time), closingTime: String(row.closing_time), intervalMinutes: Number(row.interval_minutes ?? 30), updatedAt: row.updated_at ?? null };
 }
 salonSettingsRouter.get("/", publicRoute, async c => {
   try { return c.json(apiSuccess(await readSettings())); }
