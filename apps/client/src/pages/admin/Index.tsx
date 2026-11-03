@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CalendarDays, CalendarCheck, Check, Clock3, Gift, LayoutDashboard, Mail, Phone, RefreshCw, Scissors, Settings2, ShieldCheck, Users, Wallet, X } from "lucide-react";
+import { CalendarDays, CalendarCheck, Check, Clock3, Gift, LayoutDashboard, Mail, Menu, Phone, RefreshCw, Scissors, Settings2, ShieldCheck, Users, Wallet, X } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import SiteLayout from "../../site/SiteLayout";
@@ -37,6 +37,7 @@ const statusLabels: Record<string, string> = {
 
 function AdminContent() {
   const [items, setItems] = useState<Booking[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadBookingCount, setUnreadBookingCount] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -340,9 +341,49 @@ function AdminContent() {
               </div>
             </aside>
             <div className="min-w-0">
-              <nav aria-label="Acesso rápido ao painel" className="mb-4 flex gap-2 overflow-x-auto rounded-2xl border border-[#e9e0d7] bg-white p-2 shadow-sm lg:hidden">
-                {[["overview","Resumo"],["bookings","Agenda"],["operating","Horários"],["services","Serviços"],["finance","Financeiro"],["loyalty","Fidelidade"],["team","Equipa"]].map(([id,label]) => <a key={id} href={`#${id}`} onClick={id === "bookings" ? markBookingsSeen : undefined} className="shrink-0 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#705844] hover:bg-[#f7f1eb]">{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</a>)}
-              </nav>
+              <div className="relative mb-4 lg:hidden">
+                <button
+                  type="button"
+                  aria-expanded={mobileMenuOpen}
+                  aria-controls="admin-mobile-menu"
+                  onClick={() => setMobileMenuOpen((open) => !open)}
+                  className="flex min-h-12 w-full items-center justify-between rounded-xl border border-[#e9e0d7] bg-white px-4 py-3 text-sm font-semibold text-[#493629] transition hover:border-[#cdb8a5]"
+                >
+                  <span className="flex items-center gap-3"><Menu size={19} className="text-[#76543f]" /> Menu principal</span>
+                  <span className="text-xs font-medium text-[#9a8574]">{mobileMenuOpen ? "Fechar" : "Abrir"}</span>
+                </button>
+                {mobileMenuOpen && (
+                  <nav id="admin-mobile-menu" aria-label="Menu principal" className="mt-2 overflow-hidden rounded-xl border border-[#e9e0d7] bg-white">
+                    {[
+                      { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
+                      { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
+                      { id: "operating", label: "Funcionamento e horários", Icon: Settings2 },
+                      { id: "services", label: "Serviços e preços", Icon: Scissors },
+                      { id: "finance", label: "Financeiro", Icon: Wallet },
+                      { id: "loyalty", label: "Fidelidade", Icon: Gift },
+                      { id: "team", label: "Equipa e acessos", Icon: Users },
+                    ].map(({ id, label, Icon }) => (
+                      <a
+                        key={id}
+                        href={`#${id}`}
+                        onClick={() => {
+                          if (id === "bookings") markBookingsSeen();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="flex min-h-12 items-center gap-3 border-b border-[#f0e7df] px-4 py-3 text-sm font-medium text-[#705844] transition last:border-b-0 hover:bg-[#fbf6f0] hover:text-[#493629]"
+                      >
+                        <Icon size={17} className="shrink-0 text-[#a1846c]" />
+                        <span className="flex-1">{label}</span>
+                        {id === "bookings" && unreadBookingCount > 0 && (
+                          <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                            {unreadBookingCount > 99 ? "99+" : unreadBookingCount}
+                          </span>
+                        )}
+                      </a>
+                    ))}
+                  </nav>
+                )}
+              </div>
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#e6d6c7] bg-white/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#9a765b]">
