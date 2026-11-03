@@ -1,0 +1,85 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - feat/android-apk-preview
+    tags:
+      - "android-v*"
+    paths:
+      - "android-app/**"
+      - ".github/workflows/android-apk.yml"
+  pull_request:
+    paths:
+      - "android-app/**"
+      - ".github/workflows/android-apk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build installable Android APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: android-app/package.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Capacitor and image processor
+        run: npm install --no-audit --no-fund && npm install --no-save sharp
+
+      - name: Generate Android project
+        run: npx cap add android
+
+      - name: Generate branded app icons
+        run: node generate-assets.cjs
+
+      - name: Sync Android project
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android-app/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK for testing
+        uses: actions/upload-artifact@v4
+        with:
+          name: leticia-borges-nails-android-debug
+          path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Prepare public download asset
+        if: startsWith(github.ref, 'refs/tags/android-v')
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk leticia.apk
+
+      - name: Publish public GitHub Release
+        if: startsWith(github.ref, 'refs/tags/android-v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Letícia Borges Nails ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: android-app/leticia.apk
