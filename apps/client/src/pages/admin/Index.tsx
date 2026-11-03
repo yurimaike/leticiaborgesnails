@@ -318,8 +318,15 @@ function AdminContent() {
     ),
     [items, dateFilter, statusFilter, historyView],
   );
-  const pendingCount = items.filter((booking) => booking.status === "pending").length;
-  const confirmedCount = items.filter((booking) => booking.status === "confirmed").length;
+  // Os cartões do painel mostram somente reservas com data no mês atual.
+  // O histórico completo continua disponível na lista de reservas.
+  const currentMonth = (() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  })();
+  const currentMonthItems = items.filter((booking) => booking.bookingDate.slice(0, 7) === currentMonth);
+  const pendingCount = currentMonthItems.filter((booking) => booking.status === "pending").length;
+  const confirmedCount = currentMonthItems.filter((booking) => booking.status === "confirmed").length;
 
   return (
     <SiteLayout title="Painel administrativo | Leticia" description="Gestão de reservas do estúdio Leticia Nail Designer">
@@ -418,7 +425,7 @@ function AdminContent() {
           <div id="overview" style={{ display: activePage === "overview" ? undefined : "none" }} className="mb-7 grid scroll-mt-28 gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-[#eadbce] bg-white p-5 shadow-[0_8px_24px_rgba(92,65,43,0.05)]">
               <p className="text-sm text-[#8c7767]">Total de reservas</p>
-              <p className="mt-2 font-serif text-3xl text-[#493629]">{items.length}</p>
+              <p className="mt-2 font-serif text-3xl text-[#493629]">{currentMonthItems.length}</p>
             </div>
             <div className="rounded-2xl border border-[#eadbce] bg-white p-5 shadow-[0_8px_24px_rgba(92,65,43,0.05)]">
               <p className="text-sm text-[#8c7767]">Aguardando aprovação</p>
