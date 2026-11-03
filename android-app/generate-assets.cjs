@@ -18,20 +18,8 @@ const sizes = {
     }
     await sharp(path.join(process.cwd(), "icon.svg")).resize(size.foreground, size.foreground, { fit: "contain" }).png().toFile(path.join(dir, "ic_launcher_foreground.png"));
   }
-  const values = path.join(root, "values");
-  await fs.mkdir(values, { recursive: true });
-  const colorsPath = path.join(values, "colors.xml");
-  let colors = "";
-  try { colors = await fs.readFile(colorsPath, "utf8"); } catch {}
-  if (colors.includes("</resources>")) {
-    if (colors.includes('name="ic_launcher_background"')) {
-      colors = colors.replace(/<color name="ic_launcher_background">.*?<\/color>/, '<color name="ic_launcher_background">#F4DFCC</color>');
-    } else {
-      colors = colors.replace("</resources>", '    <color name="ic_launcher_background">#F4DFCC</color>\n</resources>');
-    }
-  } else {
-    colors = '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#F4DFCC</color>\n</resources>\n';
-  }
-  await fs.writeFile(colorsPath, colors);
+  const backgroundPath = path.join(root, "values", "ic_launcher_background.xml");
+  await fs.mkdir(path.dirname(backgroundPath), { recursive: true });
+  await fs.writeFile(backgroundPath, '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#F4DFCC</color>\n</resources>\n');
   console.log("Branded Letícia Borges Nails launcher icons generated.");
 })().catch(error => { console.error(error); process.exit(1); });
