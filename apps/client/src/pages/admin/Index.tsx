@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CalendarDays, Check, Clock3, Mail, Phone, RefreshCw, ShieldCheck, X } from "lucide-react";
+import { CalendarDays, CalendarCheck, Check, Clock3, Gift, LayoutDashboard, Mail, Phone, RefreshCw, Scissors, Settings2, ShieldCheck, Users, Wallet, X } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import SiteLayout from "../../site/SiteLayout";
@@ -278,8 +278,34 @@ function AdminContent() {
 
   return (
     <SiteLayout title="Painel administrativo | Leticia" description="Gestão de reservas do estúdio Leticia Nail Designer">
-      <main className="min-h-[70vh] bg-[#fbf5ed]">
-        <div className="section-shell mx-auto max-w-6xl px-4 py-10 sm:py-14">
+      <main className="min-h-screen bg-[#f7f5f1]">
+        <div className="mx-auto max-w-[1500px] px-3 py-4 sm:px-5 lg:px-7 lg:py-6">
+          <div className="grid gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-7">
+            <aside className="hidden lg:block">
+              <div className="sticky top-5 rounded-3xl border border-[#e9e0d7] bg-white p-4 shadow-[0_8px_28px_rgba(73,54,41,0.05)]">
+                <div className="mb-6 flex items-center gap-3 px-2 py-3">
+                  <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#76543f] text-white"><Scissors size={20} /></span>
+                  <span><strong className="block font-serif text-lg text-[#493629]">Letícia Nails</strong><small className="text-xs text-[#9a8574]">Gestão do estúdio</small></span>
+                </div>
+                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#b19b88]">Menu principal</p>
+                <nav aria-label="Menu administrativo" className="grid gap-1">
+                  {[
+                    { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
+                    { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
+                    { id: "operating", label: "Funcionamento", Icon: Settings2 },
+                    { id: "services", label: "Serviços e preços", Icon: Scissors },
+                    { id: "finance", label: "Financeiro", Icon: Wallet },
+                    { id: "loyalty", label: "Fidelidade", Icon: Gift },
+                    { id: "team", label: "Equipa e acessos", Icon: Users },
+                  ].map(({ id, label, Icon }) => <a key={id} href={`#${id}`} className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#735e4d] transition hover:bg-[#f7f1eb] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}</a>)}
+                </nav>
+                <div className="mt-6 rounded-2xl bg-[#f8f4ef] p-3"><p className="text-xs font-semibold text-[#705844]">Painel protegido</p><p className="mt-1 text-[11px] leading-relaxed text-[#9a8574]">Acesso exclusivo à equipa autorizada.</p></div>
+              </div>
+            </aside>
+            <div className="min-w-0">
+              <nav aria-label="Acesso rápido ao painel" className="mb-4 flex gap-2 overflow-x-auto rounded-2xl border border-[#e9e0d7] bg-white p-2 shadow-sm lg:hidden">
+                {[["overview","Resumo"],["bookings","Agenda"],["operating","Horários"],["services","Serviços"],["finance","Financeiro"],["loyalty","Fidelidade"],["team","Equipa"]].map(([id,label]) => <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#705844] hover:bg-[#f7f1eb]">{label}</a>)}
+              </nav>
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#e6d6c7] bg-white/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#9a765b]">
@@ -299,24 +325,6 @@ function AdminContent() {
               {refreshing ? "Atualizando..." : "Atualizar agenda"}
             </button>
           </div>
-
-          <nav aria-label="Navegação do painel administrativo" className="sticky top-2 z-30 mb-6 -mx-1 rounded-2xl border border-[#e8d9cb] bg-[#fffdfa]/95 p-2 shadow-[0_8px_24px_rgba(92,65,43,0.08)] backdrop-blur">
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {[
-                ["overview", "Resumo"],
-                ["operating", "Funcionamento"],
-                ["services", "Serviços"],
-                ["finance", "Financeiro"],
-                ["loyalty", "Fidelidade"],
-                ["team", "Equipa"],
-                ["bookings", "Reservas"],
-              ].map(([id, label]) => (
-                <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-4 py-3 text-sm font-semibold text-[#705844] transition hover:bg-[#f2e8de] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]">
-                  {label}
-                </a>
-              ))}
-            </div>
-          </nav>
 
           <AdminHelpGuide />
 
@@ -464,6 +472,8 @@ function AdminContent() {
               )}
             </div>
           </section>
+            </div>
+          </div>
         </div>
       </main>
       <LeticiaAIChat />
