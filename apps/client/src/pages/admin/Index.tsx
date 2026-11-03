@@ -38,6 +38,7 @@ const statusLabels: Record<string, string> = {
 function AdminContent() {
   const [items, setItems] = useState<Booking[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activePage, setActivePage] = useState("overview");
   const [unreadBookingCount, setUnreadBookingCount] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -180,6 +181,13 @@ function AdminContent() {
     const intervalId = window.setInterval(() => { void refresh(); }, 20000);
     return () => window.clearInterval(intervalId);
   }, []);
+
+  function navigateToPage(page: string) {
+    setActivePage(page);
+    setMobileMenuOpen(false);
+    if (page === "bookings") markBookingsSeen();
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
 
   function markBookingsSeen() {
     const knownKey = "leticia-admin-known-bookings-v1";
@@ -335,7 +343,7 @@ function AdminContent() {
                     { id: "finance", label: "Financeiro", Icon: Wallet },
                     { id: "loyalty", label: "Fidelidade", Icon: Gift },
                     { id: "team", label: "Equipa e acessos", Icon: Users },
-                  ].map(({ id, label, Icon }) => <a key={id} href={`#${id}`} onClick={id === "bookings" ? markBookingsSeen : undefined} className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#735e4d] transition hover:bg-[#f7f1eb] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</a>)}
+                  ].map(({ id, label, Icon }) => <button type="button" key={id} onClick={() => navigateToPage(id)} aria-current={activePage === id ? "page" : undefined} className={`w-full text-left group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b] ${activePage === id ? "bg-[#f7f1eb] text-[#493629]" : "text-[#735e4d] hover:bg-[#f7f1eb] hover:text-[#493629]"}`}><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</button>)}
                 </nav>
                 <div className="mt-6 rounded-2xl bg-[#f8f4ef] p-3"><p className="text-xs font-semibold text-[#705844]">Painel protegido</p><p className="mt-1 text-[11px] leading-relaxed text-[#9a8574]">Acesso exclusivo à equipa autorizada.</p></div>
               </div>
@@ -363,14 +371,12 @@ function AdminContent() {
                       { id: "loyalty", label: "Fidelidade", Icon: Gift },
                       { id: "team", label: "Equipa e acessos", Icon: Users },
                     ].map(({ id, label, Icon }) => (
-                      <a
+                      <button
+                        type="button"
                         key={id}
-                        href={`#${id}`}
-                        onClick={() => {
-                          if (id === "bookings") markBookingsSeen();
-                          setMobileMenuOpen(false);
-                        }}
-                        className="flex min-h-12 items-center gap-3 border-b border-[#f0e7df] px-4 py-3 text-sm font-medium text-[#705844] transition last:border-b-0 hover:bg-[#fbf6f0] hover:text-[#493629]"
+                        onClick={() => navigateToPage(id)}
+                        aria-current={activePage === id ? "page" : undefined}
+                        className={`flex min-h-12 w-full items-center gap-3 border-b border-[#f0e7df] px-4 py-3 text-left text-sm font-medium transition last:border-b-0 hover:bg-[#fbf6f0] hover:text-[#493629] ${activePage === id ? "bg-[#fbf6f0] text-[#493629]" : "text-[#705844]"}`}
                       >
                         <Icon size={17} className="shrink-0 text-[#a1846c]" />
                         <span className="flex-1">{label}</span>
@@ -379,12 +385,18 @@ function AdminContent() {
                             {unreadBookingCount > 99 ? "99+" : unreadBookingCount}
                           </span>
                         )}
-                      </a>
+                      </button>
                     ))}
                   </nav>
                 )}
               </div>
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              {activePage !== "overview" && <div className="mb-6 rounded-2xl border border-[#e9e0d7] bg-white p-4 sm:p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a1846c]">Painel administrativo</p><h1 className="mt-1 font-serif text-2xl text-[#493629]">{({ bookings: "Agendamentos", operating: "Funcionamento e horários", services: "Serviços e preços", finance: "Financeiro", loyalty: "Fidelidade", team: "Equipa e acessos" } as Record<string, string>)[activePage] ?? "Visão geral"}</h1></div>
+                  <button type="button" onClick={() => navigateToPage("overview")} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-sm font-semibold text-[#705844] hover:bg-[#f5e9dd]">Voltar à visão geral</button>
+                </div>
+              </div>}
+          <div style={{ display: activePage === "overview" ? undefined : "none" }} className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#e6d6c7] bg-white/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-[#9a765b]">
                 <ShieldCheck size={14} /> Área protegida
@@ -404,9 +416,9 @@ function AdminContent() {
             </button>
           </div>
 
-          <AdminHelpGuide />
+          <div style={{ display: activePage === "overview" ? undefined : "none" }}><AdminHelpGuide /></div>
 
-          <div id="overview" className="mb-7 grid scroll-mt-28 gap-4 sm:grid-cols-3">
+          <div id="overview" style={{ display: activePage === "overview" ? undefined : "none" }} className="mb-7 grid scroll-mt-28 gap-4 sm:grid-cols-3">
             <div className="rounded-2xl border border-[#eadbce] bg-white p-5 shadow-[0_8px_24px_rgba(92,65,43,0.05)]">
               <p className="text-sm text-[#8c7767]">Total de reservas</p>
               <p className="mt-2 font-serif text-3xl text-[#493629]">{items.length}</p>
@@ -421,15 +433,15 @@ function AdminContent() {
             </div>
           </div>
 
-          <div id="operating" className="scroll-mt-28"><SalonSettingsPanel /></div>
-          <div id="services" className="scroll-mt-28 space-y-7">
+          <div id="operating" style={{ display: activePage === "operating" ? undefined : "none" }} className="scroll-mt-28"><SalonSettingsPanel /></div>
+          <div id="services" style={{ display: activePage === "services" ? undefined : "none" }} className="scroll-mt-28 space-y-7">
             <ServiceCatalogPanel />
             <ServicePricesPanel />
           </div>
 
-          <div id="finance" className="scroll-mt-28"><FinancePanel /></div>
+          <div id="finance" style={{ display: activePage === "finance" ? undefined : "none" }} className="scroll-mt-28"><FinancePanel /></div>
 
-          <section id="loyalty" className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+          <section id="loyalty" style={{ display: activePage === "loyalty" ? undefined : "none" }} className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div><h2 className="font-serif text-2xl text-[#493629]">Fidelidade: a cada 8 atendimentos</h2><p className="mt-1 text-sm text-[#8c7767]">Somente atendimentos pagos e concluídos contam. O bônus dá direito a um serviço cadastrado.</p></div>
               <button type="button" onClick={() => void toggleLoyalty()} className={`rounded-full px-5 py-2.5 text-sm font-semibold ${loyalty.enabled ? "bg-[#6d8267] text-white" : "border border-[#d9c4b1] bg-white text-[#705844]"}`}>{loyalty.enabled ? "Programa ativado · Desativar" : "Programa desativado · Ativar"}</button>
@@ -438,7 +450,7 @@ function AdminContent() {
             <div className="mt-5 space-y-3">{loyalty.rewards.map(reward => <div key={reward.id} className="flex flex-col gap-3 rounded-xl border border-[#eaded3] p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-semibold text-[#493629]">{reward.customerName}</p><p className="text-xs text-[#8c7767]">{reward.customerEmail} · Ciclo {reward.cycleNumber} · {reward.status === "earned" ? `Vence em: ${reward.expiresAt ? new Date(reward.expiresAt).toLocaleDateString("pt-BR") : "sem prazo definido"}` : `Utilizado: ${reward.redeemedService ?? "serviço"}`}</p></div>{reward.status === "earned" && <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void adjustRewardValidity(reward)} className="rounded-full border border-[#d9c4b1] bg-white px-3 py-2 text-xs font-semibold text-[#705844]">Ajustar validade</button><select aria-label={`Reserva para resgate de ${reward.customerName}`} value={redeemBookingChoices[reward.id] || ""} onChange={event => setRedeemBookingChoices(old => ({ ...old, [reward.id]: event.target.value }))} className="rounded-xl border border-[#dfcdbd] bg-white px-3 py-2 text-sm text-[#493629]"><option value="">Escolher reserva aprovada</option>{items.filter(item => item.customerEmail.toLowerCase() === reward.customerEmail.toLowerCase() && item.status === "confirmed").map(item => <option key={item.id} value={item.id}>{item.bookingDate} · {item.bookingTime} · {item.service}</option>)}</select><select aria-label={`Serviço gratuito de ${reward.customerName}`} value={redeemChoices[reward.id] || serviceChoices[0]} onChange={event => setRedeemChoices(old => ({ ...old, [reward.id]: event.target.value }))} className="rounded-xl border border-[#dfcdbd] bg-white px-3 py-2 text-sm text-[#493629]">{serviceChoices.map(service => <option key={service}>{service}</option>)}</select><button type="button" onClick={() => void redeemReward(reward)} className="rounded-full bg-[#6d8267] px-4 py-2 text-sm font-semibold text-white">Confirmar resgate</button></div>}</div>)}</div>
           </section>
 
-          <section id="team" className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+          <section id="team" style={{ display: activePage === "team" ? undefined : "none" }} className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
             <h2 className="font-serif text-2xl text-[#493629]">Acesso de funcionários e familiares</h2>
             <p className="mt-1 text-sm text-[#8c7767]">Autorize o e-mail que já pertence à conta original da pessoa. Para trocar uma senha esquecida, use Gerar nova senha temporária ao lado do e-mail. O sistema mantém a mesma conta, histórico, permissões e identificador; não cria outra conta.</p>
             <form onSubmit={addAuthorisedEmail} className="mt-4 flex flex-col gap-3 sm:flex-row">
@@ -452,7 +464,7 @@ function AdminContent() {
             </div>
           </section>
 
-          <section id="bookings" className="scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+          <section id="bookings" style={{ display: activePage === "bookings" ? undefined : "none" }} className="scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-5 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
             <div className="mb-6 flex flex-col gap-1">
               <h2 className="font-serif text-2xl text-[#493629]">Reservas recebidas</h2>
               <p className="text-sm text-[#8c7767]">Yuri e Letícia têm acesso administrativo com as mesmas permissões.</p>
