@@ -326,9 +326,9 @@ function AdminContent() {
     <SiteLayout title="Painel administrativo | Leticia" description="Gestão de reservas do estúdio Leticia Nail Designer">
       <main className="min-h-screen bg-[#f7f5f1]">
         <div className="mx-auto max-w-[1500px] px-3 py-4 sm:px-5 lg:px-7 lg:py-6">
-          <div className="grid gap-5 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-7">
+          <div className="grid gap-5 lg:grid-cols-[270px_minmax(0,1fr)] lg:gap-7">
             <aside className="hidden lg:block">
-              <div className="sticky top-5 rounded-3xl border border-[#e9e0d7] bg-white p-4 shadow-[0_8px_28px_rgba(73,54,41,0.05)]">
+              <div className="sticky top-5 rounded-3xl border border-[#e9e0d7] bg-white p-5 shadow-[0_8px_28px_rgba(73,54,41,0.06)]">
                 <div className="mb-6 flex items-center gap-3 px-2 py-3">
                   <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#76543f] text-white"><Scissors size={20} /></span>
                   <span><strong className="block font-serif text-lg text-[#493629]">Letícia Nails</strong><small className="text-xs text-[#9a8574]">Gestão do estúdio</small></span>
@@ -343,7 +343,7 @@ function AdminContent() {
                     { id: "finance", label: "Financeiro", Icon: Wallet },
                     { id: "loyalty", label: "Fidelidade", Icon: Gift },
                     { id: "team", label: "Equipa e acessos", Icon: Users },
-                  ].map(({ id, label, Icon }) => <button type="button" key={id} onClick={() => navigateToPage(id)} aria-current={activePage === id ? "page" : undefined} className={`w-full text-left group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b] ${activePage === id ? "bg-[#f7f1eb] text-[#493629]" : "text-[#735e4d] hover:bg-[#f7f1eb] hover:text-[#493629]"}`}><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</button>)}
+                  ].map(({ id, label, Icon }) => <button type="button" key={id} onClick={() => navigateToPage(id)} aria-current={activePage === id ? "page" : undefined} className={`w-full text-left group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b] ${activePage === id ? "bg-[#76543f] text-white shadow-sm" : "text-[#735e4d] hover:bg-[#f7f1eb] hover:text-[#493629]"}`}><Icon size={17} className={activePage === id ? "text-[#f7e9dc]" : "text-[#a1846c] group-hover:text-[#76543f]"} />{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</button>)}
                 </nav>
                 <div className="mt-6 rounded-2xl bg-[#f8f4ef] p-3"><p className="text-xs font-semibold text-[#705844]">Painel protegido</p><p className="mt-1 text-[11px] leading-relaxed text-[#9a8574]">Acesso exclusivo à equipa autorizada.</p></div>
               </div>
