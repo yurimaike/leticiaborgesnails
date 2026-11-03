@@ -37,6 +37,7 @@ const statusLabels: Record<string, string> = {
 
 function AdminContent() {
   const [items, setItems] = useState<Booking[]>([]);
+  const [unreadBookingCount, setUnreadBookingCount] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -60,7 +61,28 @@ function AdminContent() {
       const response = await apiFetch("/bookings/admin");
       const payload = await response.json() as Payload<{ bookings: Booking[] }>;
       if (!response.ok || !payload.ok) throw new Error(payload.error?.message ?? "Não foi possível carregar as reservas.");
-      setItems(payload.data?.bookings ?? []);
+      const bookings = payload.data?.bookings ?? [];
+      setItems(bookings);
+      const knownKey = "leticia-admin-known-bookings-v1";
+      const unreadKey = "leticia-admin-unread-bookings-v1";
+      const currentIds = bookings.map((booking) => booking.id);
+      const knownRaw = window.localStorage.getItem(knownKey);
+      const unreadRaw = window.localStorage.getItem(unreadKey);
+      if (knownRaw === null) {
+        window.localStorage.setItem(knownKey, JSON.stringify(currentIds));
+        window.localStorage.setItem(unreadKey, "[]");
+        setUnreadBookingCount(0);
+      } else {
+        const knownIds = new Set<string>(JSON.parse(knownRaw) as string[]);
+        const unreadIds = new Set<string>(JSON.parse(unreadRaw ?? "[]") as string[]);
+        for (const id of currentIds) {
+          if (!knownIds.has(id)) unreadIds.add(id);
+          knownIds.add(id);
+        }
+        window.localStorage.setItem(knownKey, JSON.stringify([...knownIds]));
+        window.localStorage.setItem(unreadKey, JSON.stringify([...unreadIds]));
+        setUnreadBookingCount(unreadIds.size);
+      }
       await refreshLoyalty();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Erro ao carregar reservas.");
@@ -152,6 +174,21 @@ function AdminContent() {
   }
 
   useEffect(() => { void refresh(); void refreshAuthorisedEmails(); }, []);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => { void refresh(); }, 20000);
+    return () => window.clearInterval(intervalId);
+  }, []);
+
+  function markBookingsSeen() {
+    const knownKey = "leticia-admin-known-bookings-v1";
+    const unreadKey = "leticia-admin-unread-bookings-v1";
+    const knownIds = new Set<string>(JSON.parse(window.localStorage.getItem(knownKey) ?? "[]") as string[]);
+    for (const booking of items) knownIds.add(booking.id);
+    window.localStorage.setItem(knownKey, JSON.stringify([...knownIds]));
+    window.localStorage.setItem(unreadKey, "[]");
+    setUnreadBookingCount(0);
+  }
 
   async function decide(booking: Booking, action: "confirmed" | "rejected" | "cancelled") {
     setBusy(booking.id);
@@ -297,14 +334,14 @@ function AdminContent() {
                     { id: "finance", label: "Financeiro", Icon: Wallet },
                     { id: "loyalty", label: "Fidelidade", Icon: Gift },
                     { id: "team", label: "Equipa e acessos", Icon: Users },
-                  ].map(({ id, label, Icon }) => <a key={id} href={`#${id}`} className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#735e4d] transition hover:bg-[#f7f1eb] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}</a>)}
+                  ].map(({ id, label, Icon }) => <a key={id} href={`#${id}`} onClick={id === "bookings" ? markBookingsSeen : undefined} className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#735e4d] transition hover:bg-[#f7f1eb] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</a>)}
                 </nav>
                 <div className="mt-6 rounded-2xl bg-[#f8f4ef] p-3"><p className="text-xs font-semibold text-[#705844]">Painel protegido</p><p className="mt-1 text-[11px] leading-relaxed text-[#9a8574]">Acesso exclusivo à equipa autorizada.</p></div>
               </div>
             </aside>
             <div className="min-w-0">
               <nav aria-label="Acesso rápido ao painel" className="mb-4 flex gap-2 overflow-x-auto rounded-2xl border border-[#e9e0d7] bg-white p-2 shadow-sm lg:hidden">
-                {[["overview","Resumo"],["bookings","Agenda"],["operating","Horários"],["services","Serviços"],["finance","Financeiro"],["loyalty","Fidelidade"],["team","Equipa"]].map(([id,label]) => <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#705844] hover:bg-[#f7f1eb]">{label}</a>)}
+                {[["overview","Resumo"],["bookings","Agenda"],["operating","Horários"],["services","Serviços"],["finance","Financeiro"],["loyalty","Fidelidade"],["team","Equipa"]].map(([id,label]) => <a key={id} href={`#${id}`} onClick={id === "bookings" ? markBookingsSeen : undefined} className="shrink-0 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#705844] hover:bg-[#f7f1eb]">{label}{id === "bookings" && unreadBookingCount > 0 && <span aria-label={`${unreadBookingCount} novos pedidos não visualizados`} className="ml-1.5 inline-flex min-w-4 items-center justify-center rounded-full bg-red-600 px-1 py-0.5 text-[10px] font-bold leading-none text-white">{unreadBookingCount > 99 ? "99+" : unreadBookingCount}</span>}</a>)}
               </nav>
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
