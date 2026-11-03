@@ -1,0 +1,24 @@
+{
+  "name": "Letícia Borges Nails",
+  "short_name": "Letícia Nails",
+  "description": "Agendamentos e informações da Letícia Borges Nails.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#f7f1e8",
+  "theme_color": "#8b684d",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
