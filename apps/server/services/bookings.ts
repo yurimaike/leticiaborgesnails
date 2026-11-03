@@ -13,9 +13,14 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
   if (salon && Number(salon.is_open) !== 1) throw new DatabaseError("SALON_CLOSED", "O salão está fechado no momento e não está recebendo novos agendamentos.", 409);
   const openingTime = salon ? String(salon.opening_time) : "08:00";
   const closingTime = salon ? String(salon.closing_time) : "19:00";
-  const intervalMinutes = salon ? Number(salon.interval_minutes ?? 90) : 90;\n  const [hour, minute] = input.bookingTime.split(":").map(Number);\n  const requestedMinutes = hour * 60 + minute;\n  const openingMinutes = Number(openingTime.slice(0, 2)) * 60 + Number(openingTime.slice(3));\n  const closingMinutes = Number(closingTime.slice(0, 2)) * 60 + Number(closingTime.slice(3));\n  if (requestedMinutes < openingMinutes || requestedMinutes > closingMinutes) throw new DatabaseError("OUTSIDE_OPENING_HOURS", `Escolha um horário entre ${openingTime} e ${closingTime}.`, 400);
+  const intervalMinutes = salon ? Number(salon.interval_minutes ?? 90) : 90;
+  const [hour, minute] = input.bookingTime.split(":").map(Number);
+  const requestedMinutes = hour * 60 + minute;
+  const openingMinutes = Number(openingTime.slice(0, 2)) * 60 + Number(openingTime.slice(3));
+  const closingMinutes = Number(closingTime.slice(0, 2)) * 60 + Number(closingTime.slice(3));
+  if (requestedMinutes < openingMinutes || requestedMinutes > closingMinutes) throw new DatabaseError("OUTSIDE_OPENING_HOURS", `Escolha um horário entre ${openingTime} e ${closingTime}.`, 400);
   const services = Array.isArray(input.service) ? input.service : [input.service];
-  if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(input.bookingTime) || (requestedMinutes !== closingMinutes && (requestedMinutes - openingMinutes) % intervalMinutes !== 0) || services.length<1||services.length>4||new Set(services).size!==services.length) throw new DatabaseError("INVALID_INPUT","Escolha um horário disponível e de 1 a 4 serviços válidos, sem repetir.",400);
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.bookingTime) || (requestedMinutes !== closingMinutes && (requestedMinutes - openingMinutes) % intervalMinutes !== 0) || services.length<1||services.length>4||new Set(services).size!==services.length) throw new DatabaseError("INVALID_INPUT","Escolha um horário disponível e de 1 a 4 serviços válidos, sem repetir.",400);
   const activeCatalog = await executeSql("SELECT name FROM service_catalog WHERE active=1");
   const activeNames = new Set(activeCatalog.rows.map(row=>String(row.name)));
   if (services.some(service=>!activeNames.has(service))) throw new DatabaseError("INVALID_INPUT","Um ou mais serviços não estão disponíveis. Actualize a página e tente novamente.",400);
