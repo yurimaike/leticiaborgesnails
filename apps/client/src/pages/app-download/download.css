@@ -45,3 +45,9 @@
 .app-download-help { margin: 25px 0 0; text-align: center; color: #806f60; font-size: 12px; }
 .app-download-help a { color: #684b37; font-weight: 700; text-underline-offset: 3px; }
 @media (max-width: 700px) { .app-download-hero { padding: 28px 20px 58px; } .app-download-back { margin-bottom: 29px; } .app-download-details { width: min(100% - 32px, 960px); padding: 48px 0 60px; } .app-download-info-grid { grid-template-columns: 1fr; } .app-download-info-card { min-height: auto; } .app-download-safety { padding: 20px; } .app-download-safety-title h2 { font-size: 22px; } .app-download-trust { padding: 18px; } }
+
+.app-download-ios-link { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: min(100%, 340px); margin-top: 14px; padding: 15px 18px; border: 1px solid rgba(104,75,55,.28); border-radius: 14px; color: #684b37; background: rgba(255,250,244,.72); font-size: 13px; font-weight: 700; line-height: 1.45; text-align: center; text-decoration: none; }
+.app-download-ios-link span { font-size: 18px; }
+.app-download-ios-link:hover { background: #fffaf4; border-color: #98765d; }
+#ios-install-title { scroll-margin-top: 24px; }
+@media (max-width: 700px) { .app-download-content h1 { font-size: clamp(38px, 10vw, 52px); } .app-download-ios-link { font-size: 12px; } }
