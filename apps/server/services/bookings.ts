@@ -13,7 +13,7 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
   if (salon && Number(salon.is_open) !== 1) throw new DatabaseError("SALON_CLOSED", "O salão está fechado no momento e não está recebendo novos agendamentos.", 409);
   const openingTime = salon ? String(salon.opening_time) : "08:00";
   const closingTime = salon ? String(salon.closing_time) : "19:00";
-  const intervalMinutes = salon ? Number(salon.interval_minutes ?? 90) : 90;
+  const intervalMinutes = salon ? Number(salon.interval_minutes ?? 30) : 30;
   const [hour, minute] = input.bookingTime.split(":").map(Number);
   const requestedMinutes = hour * 60 + minute;
   const openingMinutes = Number(openingTime.slice(0, 2)) * 60 + Number(openingTime.slice(3));
