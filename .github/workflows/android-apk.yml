@@ -45,11 +45,14 @@ jobs:
         with:
           packages: platform-tools
 
-      - name: Install Capacitor
-        run: npm install --no-audit --no-fund
+      - name: Install Capacitor and image processor
+        run: npm install --no-audit --no-fund && npm install --no-save sharp
 
       - name: Generate Android project
         run: npx cap add android
+
+      - name: Generate branded app icons
+        run: node generate-assets.cjs
 
       - name: Sync Android project
         run: npx cap sync android
