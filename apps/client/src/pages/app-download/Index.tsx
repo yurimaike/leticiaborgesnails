@@ -69,7 +69,18 @@ export default function AppDownloadPage() {
             <p className="app-download-warning"><Info size={18} /> O aviso do Android é uma proteção do sistema. Não é uma garantia de segurança nem uma prova de golpe. Nunca desligue o Play Protect ou outras proteções para instalar.</p>
           </div>
 
-          <section className="app-download-safety" aria-labelledby="ios-install-title">\n            <div className="app-download-safety-title"><Smartphone size={21} /><h2 id="ios-install-title">Tem iPhone? Veja como instalar gratuitamente</h2></div>\n            <ol>\n              <li><span>1</span><p>Abra <strong>https://leticiaborgesnails.pages.dev</strong> no navegador <strong>Safari</strong> do iPhone.</p></li>\n              <li><span>2</span><p>Toque no botão <strong>Compartilhar</strong> (quadrado com uma seta para cima).</p></li>\n              <li><span>3</span><p>Escolha <strong>Adicionar à Tela de Início</strong>. Se aparecer a opção, mantenha <strong>Abrir como App da Web</strong> activada.</p></li>\n              <li><span>4</span><p>Toque em <strong>Adicionar</strong>. O ícone Letícia Nails aparecerá na tela inicial; abra por ele para usar.</p></li>\n            </ol>\n            <p className="app-download-warning"><Info size={18} /> No iPhone não se instala o arquivo APK. Esta é uma versão web instalável (PWA), gratuita e que funciona pela internet. Não é um aplicativo publicado na App Store; os agendamentos continuam no site oficial.</p>\n          </section>\n\n          <div className="app-download-trust">
+          <section className="app-download-safety" aria-labelledby="ios-install-title">
+            <div className="app-download-safety-title"><Smartphone size={21} /><h2 id="ios-install-title">Tem iPhone? Veja como instalar gratuitamente</h2></div>
+            <ol>
+              <li><span>1</span><p>Abra <strong>https://leticiaborgesnails.pages.dev</strong> no navegador <strong>Safari</strong> do iPhone.</p></li>
+              <li><span>2</span><p>Toque no botão <strong>Compartilhar</strong> (quadrado com uma seta para cima).</p></li>
+              <li><span>3</span><p>Escolha <strong>Adicionar à Tela de Início</strong>. Se aparecer a opção, mantenha <strong>Abrir como App da Web</strong> ativada.</p></li>
+              <li><span>4</span><p>Toque em <strong>Adicionar</strong>. O ícone Letícia Nails aparecerá na tela inicial; abra por ele para usar.</p></li>
+            </ol>
+            <p className="app-download-warning"><Info size={18} /> No iPhone não se instala o arquivo APK. Esta é uma versão web instalável (PWA), gratuita e que funciona pela internet. Não é um aplicativo publicado na App Store; os agendamentos continuam no site oficial.</p>
+          </section>
+
+          <div className="app-download-trust">
             <div className="app-download-trust-icon"><CheckCircle2 size={25} /></div>
             <div><h2>Você não precisa pagar para baixar.</h2><p>Não solicitamos Pix, cartão, senha bancária, código de verificação ou pagamento antecipado para desbloquear ou instalar o aplicativo. O pagamento dos serviços do salão é combinado diretamente e realizado pessoalmente.</p></div>
           </div>
