@@ -121,13 +121,25 @@ const Index = () => {
         <section className="section-shell invite-section" aria-labelledby="android-app-title">
           <div className="invite-card">
             <div>
-              <p className="eyebrow">Aplicativo gratuito</p>
+              <p className="eyebrow">NOVO · Aplicativo gratuito</p>
               <h2 id="android-app-title">Letícia Borges Nails no seu Android.</h2>
-              <p>Tenha acesso ao site e à agenda pelo aplicativo no seu celular Android.</p>
-              <p className="mt-3 text-sm opacity-80">A instalação é feita por APK e o Android pode pedir autorização para instalar aplicativos baixados pela internet.</p>
+              <p>Acesse o site e consulte a agenda com praticidade pelo aplicativo oficial do salão.</p>
+              <p className="mt-3 text-sm opacity-90"><strong>Segurança e confiança:</strong> baixe somente pelo botão oficial desta página. O aplicativo não pede Pix nem pagamento antecipado. Os pagamentos do atendimento são combinados presencialmente no salão.</p>
+              <details className="mt-4 rounded-xl border border-current/15 p-4">
+                <summary className="cursor-pointer font-semibold">Como instalar no Samsung (passo a passo)</summary>
+                <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm">
+                  <li>Toque em <strong>Baixar Leticia.apk</strong> e aguarde o download terminar.</li>
+                  <li>Se aparecer um aviso, abra as configurações de segurança. Em celulares Samsung, o <strong>Bloqueador automático</strong> pode impedir instalações de fora da Play Store/Galaxy Store. Para instalar este APK, pode ser necessário desativá-lo temporariamente.</li>
+                  <li>Se o celular pedir, permita <strong>Instalar aplicativos desconhecidos</strong> para o navegador ou aplicativo usado para abrir o arquivo baixado.</li>
+                  <li>Abra <strong>Leticia.apk</strong> em Downloads e toque em <strong>Instalar</strong>.</li>
+                  <li>Depois da instalação, volte às configurações e reative o Bloqueador automático e retire a permissão de instalar aplicativos desconhecidos.</li>
+                </ol>
+                <p className="mt-3 text-sm">O nome das opções pode variar conforme a versão do Android. Só prossiga se tiver baixado o arquivo diretamente deste site oficial. Se não se sentir confortável, não altere as proteções do telefone.</p>
+              </details>
+              <p className="mt-3 text-xs opacity-80">Este app abre o site do salão; precisa de internet. Não é distribuído pela Google Play. O Android pode mostrar avisos por ser uma instalação manual.</p>
             </div>
-            <a className="button button-light" href="https://github.com/yurimaike/leticiaborgesnails/releases/latest/download/LeticiaBorgesNails.apk" target="_blank" rel="noreferrer">
-              <Download size={18} /> Baixar app Android <ArrowUpRight size={17} />
+            <a className="button button-light" href="https://github.com/yurimaike/leticiaborgesnails/releases/latest/download/leticia.apk" target="_blank" rel="noreferrer">
+              <Download size={18} /> Baixar Leticia.apk <ArrowUpRight size={17} />
             </a>
           </div>
         </section>
