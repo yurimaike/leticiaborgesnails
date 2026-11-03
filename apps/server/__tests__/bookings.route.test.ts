@@ -4,7 +4,7 @@ import { executeSql } from "../_core/db";
 import { applyMigrations, fetchWithAuth, resetDatabase, signUpAndGetToken } from "../_test/helpers";
 
 beforeAll(async () => { await applyMigrations(); });
-beforeEach(async () => { await resetDatabase(); await executeSql("DELETE FROM bookings"); await executeSql("UPDATE salon_settings SET is_open=1, opening_time='08:00', closing_time='19:00' WHERE id=1"); });
+beforeEach(async () => { await resetDatabase(); await executeSql("DELETE FROM bookings"); await executeSql("UPDATE salon_settings SET is_open=1, opening_time='08:00', closing_time='19:00', interval_minutes=90 WHERE id=1"); });
 function futureDate(days: number) {
   const d = new Date(); d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -42,6 +42,33 @@ describe("bookings route", () => {
     const acceptedAfterOpening = await app.fetch(new Request("http://localhost/api/bookings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ customerName: "New Client", customerEmail: "new@example.com", customerPhone: "51999999999", bookingDate: futureDate(24), bookingTime: "11:00", service: "Pés tradicional" }) }));
     expect(acceptedAfterOpening.status).toBe(201);
   });
+  it("uses admin-configured interval and accepts a closing-time slot at 22:00", async () => {
+    const admin = await signUpAndGetToken(app, { email: "booking-hours-admin@example.com" });
+    if (!admin.userId) throw new Error("Admin fixture did not return a user id");
+    await executeSql("UPDATE user SET role='admin' WHERE id=?", [admin.userId]);
+    const saved = await fetchWithAuth(app, admin.token, "/api/salon-settings", {
+      method: "PATCH",
+      body: JSON.stringify({ openingTime: "08:00", closingTime: "22:00", intervalMinutes: 30 })
+    });
+    expect(saved.status).toBe(200);
+    const settings = await saved.json() as { data: { openingTime: string; closingTime: string; intervalMinutes: number } };
+    expect(settings.data).toMatchObject({ openingTime: "08:00", closingTime: "22:00", intervalMinutes: 30 });
+
+    const date = futureDate(25);
+    const booking = await app.fetch(new Request("http://localhost/api/bookings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ customerName: "Late Client", customerEmail: "late@example.com", customerPhone: "51999999999", bookingDate: date, bookingTime: "22:00", service: "Mãos tradicional" })
+    }));
+    expect(booking.status).toBe(201);
+    const offInterval = await app.fetch(new Request("http://localhost/api/bookings", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ customerName: "Other Client", customerEmail: "other@example.com", customerPhone: "51999999998", bookingDate: futureDate(26), bookingTime: "21:45", service: "Mãos tradicional" })
+    }));
+    expect(offInterval.status).toBe(400);
+  });
+
   it("blocks duplicate slots using valid customer details", async () => {
     const date = futureDate(21);
     const input = JSON.stringify({customerName:"Test User",customerEmail:"test@example.com",customerPhone:"51999999999",bookingDate:date,bookingTime:"13:00",service:"Mãos tradicional"});
