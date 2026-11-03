@@ -1,0 +1,17 @@
+{
+  "name": "leticia-borges-nails-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Android wrapper for Letícia Borges Nails",
+  "scripts": {
+    "android:add": "cap add android",
+    "android:sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/core": "8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.6.0"
+  }
+}
