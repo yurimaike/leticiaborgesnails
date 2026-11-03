@@ -290,14 +290,14 @@ function AdminContent() {
                 <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#b19b88]">Menu principal</p>
                 <nav aria-label="Menu administrativo" className="grid gap-1">
                   {[
-                    ["overview", "Visão geral", LayoutDashboard],
-                    ["bookings", "Agendamentos", CalendarCheck],
-                    ["operating", "Funcionamento", Settings2],
-                    ["services", "Serviços e preços", Scissors],
-                    ["finance", "Financeiro", Wallet],
-                    ["loyalty", "Fidelidade", Gift],
-                    ["team", "Equipa e acessos", Users],
-                  ].map(([id, label, Icon]) => <a key={String(id)} href={`#${id}`} className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#735e4d] transition hover:bg-[#f7f1eb] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{String(label)}</a>)}
+                    { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
+                    { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
+                    { id: "operating", label: "Funcionamento", Icon: Settings2 },
+                    { id: "services", label: "Serviços e preços", Icon: Scissors },
+                    { id: "finance", label: "Financeiro", Icon: Wallet },
+                    { id: "loyalty", label: "Fidelidade", Icon: Gift },
+                    { id: "team", label: "Equipa e acessos", Icon: Users },
+                  ].map(({ id, label, Icon }) => <a key={id} href={`#${id}`} className="group flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium text-[#735e4d] transition hover:bg-[#f7f1eb] hover:text-[#493629] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8a654b]"><Icon size={17} className="text-[#a1846c] group-hover:text-[#76543f]" />{label}</a>)}
                 </nav>
                 <div className="mt-6 rounded-2xl bg-[#f8f4ef] p-3"><p className="text-xs font-semibold text-[#705844]">Painel protegido</p><p className="mt-1 text-[11px] leading-relaxed text-[#9a8574]">Acesso exclusivo à equipa autorizada.</p></div>
               </div>
