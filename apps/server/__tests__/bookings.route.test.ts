@@ -4,7 +4,7 @@ import { executeSql } from "../_core/db";
 import { applyMigrations, fetchWithAuth, resetDatabase, signUpAndGetToken } from "../_test/helpers";
 
 beforeAll(async () => { await applyMigrations(); });
-beforeEach(async () => { await resetDatabase(); await executeSql("DELETE FROM bookings"); await executeSql("UPDATE salon_settings SET is_open=1, opening_time='08:00', closing_time='19:00', interval_minutes=90 WHERE id=1"); });
+beforeEach(async () => { await resetDatabase(); await executeSql("DELETE FROM bookings"); await executeSql("UPDATE salon_settings SET is_open=1, opening_time='08:00', closing_time='19:00', interval_minutes=30 WHERE id=1"); });
 function futureDate(days: number) {
   const d = new Date(); d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
