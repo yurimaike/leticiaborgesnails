@@ -12,6 +12,7 @@ import AuthPage from "./pages/auth/Index";
 import ResetPasswordPage from "./pages/reset-password/Index";
 import ChangeTemporaryPasswordPage from "./pages/change-temporary-password/Index";
 import MyBookingsPage from "./pages/my-bookings/Index";
+import AppDownloadPage from "./pages/app-download/Index";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/servicos" element={<ServicesPage />} />
           <Route path="/agenda" element={<AgendaPage />} />
           <Route path="/contato" element={<ContactPage />} />
+          <Route path="/aplicativo" element={<AppDownloadPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/trocar-senha" element={<ChangeTemporaryPasswordPage />} />
