@@ -7,7 +7,7 @@ type Payload = { ok: boolean; data?: Settings; error?: { message?: string } };
 const inputClass = "rounded-xl border border-[#dfcdbd] bg-white px-3 py-2.5 text-sm text-[#493629] outline-none focus:border-[#a77d60]";
 const intervalOptions = [5, 10, 15, 20, 30, 45, 60, 90, 120];
 export default function SalonSettingsPanel() {
-  const [settings, setSettings] = useState<Settings>({ isOpen: true, openingTime: "08:00", closingTime: "19:00", intervalMinutes: 90 });
+  const [settings, setSettings] = useState<Settings>({ isOpen: true, openingTime: "08:00", closingTime: "19:00", intervalMinutes: 30 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
