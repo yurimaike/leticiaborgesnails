@@ -51,6 +51,16 @@ bookingsRouter.get("/guest-access/:bookingCode",publicRoute,guestBookingCodeLimi
     }));
   }catch(e){return fail(e,c);}
 });
-bookingsRouter.get("/admin",adminRoute,adminReadLimit,async c=>{try{return c.json(apiSuccess({bookings:await listBookings()}));}catch(e){return fail(e,c);}});
+bookingsRouter.get("/admin",adminRoute,adminReadLimit,async c=>{
+  try {
+    // Retenção de 6 meses: limpar apenas reservas rejeitadas/canceladas e atendimentos
+    // concluídos sem pagamento. Reservas futuras/ativas e atendimentos pagos ficam
+    // preservados para não quebrar o histórico financeiro e a fidelidade.
+    await executeSql(
+      "DELETE FROM bookings WHERE bookingDate < date('now', '-6 months') AND (status IN ('rejected','cancelled') OR (completedAt IS NOT NULL AND paymentStatus != 'paid'))"
+    );
+    return c.json(apiSuccess({bookings:await listBookings()}));
+  } catch(e) { return fail(e,c); }
+});
 bookingsRouter.get("/mine",protectedRoute,distributedRateLimit((c)=>[identityRateLimitCounter("bookings:mine",c.var.currentUser?.id,60,60)]),async c=>{const user=c.var.currentUser;if(!user.emailVerified)return c.json(apiFailure("EMAIL_NOT_VERIFIED","Verifique seu e-mail para acessar suas reservas."),403);try{return c.json(apiSuccess({bookings:await listCustomerBookings(user.id,user.email)}));}catch(e){return fail(e,c);}});
 bookingsRouter.patch("/:id/status",adminRoute,adminWriteLimit,bodySizeLimit,async c=>{const parsed=decisionSchema.safeParse(await c.req.json().catch(()=>null));if(!parsed.success)return c.json(apiFailure("INVALID_INPUT","Ação inválida."),400);try{const booking=await decideBooking(c.req.param("id"),parsed.data.action,parsed.data.note); void notifyBookingDecision(booking).catch(error=>console.error("[bookings] decision notification failed",error)); return c.json(apiSuccess({booking}));}catch(e){return fail(e,c);}});
