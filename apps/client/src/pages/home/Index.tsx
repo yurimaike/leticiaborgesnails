@@ -1,5 +1,5 @@
 import "./hero-image.css";
-import { ArrowUpRight, CalendarDays, Camera, Check, Clock3, Heart, MessageCircle } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Camera, Check, Clock3, Download, Heart, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import SiteLayout from "../../site/SiteLayout";
@@ -115,6 +115,20 @@ const Index = () => {
               <p>Escolha um serviço e um horário livre. A confirmação final acontece no WhatsApp, de forma simples e pessoal.</p>
             </div>
             <Link className="button button-light" to="/agenda">Abrir agenda <ArrowUpRight size={17} /></Link>
+          </div>
+        </section>
+
+        <section className="section-shell invite-section" aria-labelledby="android-app-title">
+          <div className="invite-card">
+            <div>
+              <p className="eyebrow">Aplicativo gratuito</p>
+              <h2 id="android-app-title">Letícia Borges Nails no seu Android.</h2>
+              <p>Tenha acesso ao site e à agenda pelo aplicativo no seu celular Android.</p>
+              <p className="mt-3 text-sm opacity-80">A instalação é feita por APK e o Android pode pedir autorização para instalar aplicativos baixados pela internet.</p>
+            </div>
+            <a className="button button-light" href="https://github.com/yurimaike/leticiaborgesnails/releases/latest/download/LeticiaBorgesNails.apk" target="_blank" rel="noreferrer">
+              <Download size={18} /> Baixar app Android <ArrowUpRight size={17} />
+            </a>
           </div>
         </section>
       </main>
