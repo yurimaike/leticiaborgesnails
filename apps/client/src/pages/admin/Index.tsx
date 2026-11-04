@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { CalendarDays, CalendarCheck, Check, Clock3, Gift, LayoutDashboard, Mail, Menu, Phone, RefreshCw, Scissors, Settings2, ShieldCheck, Users, Wallet, X } from "lucide-react";
+import { CalendarDays, CalendarCheck, Check, ChevronLeft, ChevronRight, Clock3, Gift, LayoutDashboard, Mail, Menu, Phone, RefreshCw, Scissors, Settings2, ShieldCheck, Users, Wallet, X } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { AdminGuard } from "@/components/auth/AdminGuard";
 import SiteLayout from "../../site/SiteLayout";
@@ -39,6 +39,8 @@ function AdminContent() {
   const [items, setItems] = useState<Booking[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activePage, setActivePage] = useState("overview");
+  const [calendarMonth, setCalendarMonth] = useState(() => { const now = new Date(); return new Date(now.getFullYear(), now.getMonth(), 1); });
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`; });
   const [unreadBookingCount, setUnreadBookingCount] = useState(0);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -328,6 +330,23 @@ function AdminContent() {
   const currentMonthItems = items.filter((booking) => booking.bookingDate.slice(0, 7) === currentMonth);
   const pendingCount = currentMonthItems.filter((booking) => booking.status === "pending").length;
   const confirmedCount = currentMonthItems.filter((booking) => booking.status === "confirmed").length;
+  const calendarYear = calendarMonth.getFullYear();
+  const calendarMonthIndex = calendarMonth.getMonth();
+  const calendarMonthLabel = calendarMonth.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+  const calendarFirstWeekday = new Date(calendarYear, calendarMonthIndex, 1).getDay();
+  const calendarDaysInMonth = new Date(calendarYear, calendarMonthIndex + 1, 0).getDate();
+  const calendarCells: Array<{ day: number; date: string } | null> = [
+    ...Array.from({ length: calendarFirstWeekday }, () => null),
+    ...Array.from({ length: calendarDaysInMonth }, (_, index) => {
+      const day = index + 1;
+      return { day, date: `${calendarYear}-${String(calendarMonthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}` };
+    }),
+  ];
+  const selectedDayBookings = items
+    .filter((booking) => booking.bookingDate === selectedCalendarDate && booking.status !== "rejected" && booking.status !== "cancelled" && !booking.completedAt)
+    .sort((a, b) => a.bookingTime.localeCompare(b.bookingTime));
+  const calendarMonthBookings = items.filter((booking) => booking.bookingDate.startsWith(`${calendarYear}-${String(calendarMonthIndex + 1).padStart(2, "0")}`));
+  const calendarStatusCount = (date: string) => calendarMonthBookings.filter((booking) => booking.bookingDate === date && booking.status !== "rejected" && booking.status !== "cancelled" && !booking.completedAt).length;
 
   return (
     <SiteLayout title="Painel administrativo | Leticia" description="Gestão de reservas do estúdio Leticia Nail Designer">
@@ -345,6 +364,8 @@ function AdminContent() {
                   {[
                     { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
                     { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
+                      { id: "calendar", label: "Calendário mensal", Icon: CalendarDays },
+                    { id: "calendar", label: "Calendário mensal", Icon: CalendarDays },
                     { id: "operating", label: "Funcionamento", Icon: Settings2 },
                     { id: "services", label: "Serviços e preços", Icon: Scissors },
                     { id: "finance", label: "Financeiro", Icon: Wallet },
@@ -399,7 +420,7 @@ function AdminContent() {
               </div>
               {activePage !== "overview" && <div className="mb-6 rounded-2xl border border-[#e9e0d7] bg-white p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a1846c]">Painel administrativo</p><h1 className="mt-1 font-serif text-2xl text-[#493629]">{({ bookings: "Agendamentos", operating: "Funcionamento e horários", services: "Serviços e preços", finance: "Financeiro", loyalty: "Fidelidade", team: "Equipa e acessos" } as Record<string, string>)[activePage] ?? "Visão geral"}</h1></div>
+                  <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a1846c]">Painel administrativo</p><h1 className="mt-1 font-serif text-2xl text-[#493629]">{({ bookings: "Agendamentos", calendar: "Calendário mensal", operating: "Funcionamento e horários", services: "Serviços e preços", finance: "Financeiro", loyalty: "Fidelidade", team: "Equipa e acessos" } as Record<string, string>)[activePage] ?? "Visão geral"}</h1></div>
                   <button type="button" onClick={() => navigateToPage("overview")} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-sm font-semibold text-[#705844] hover:bg-[#f5e9dd]">Voltar à visão geral</button>
                 </div>
               </div>}
@@ -437,6 +458,37 @@ function AdminContent() {
               <p className="mt-2 font-serif text-3xl text-[#66816a]">{confirmedCount}</p>
             </div>
           </div>
+
+          <section id="calendar" style={{ display: activePage === "calendar" ? undefined : "none" }} className="mb-7 scroll-mt-28 rounded-3xl border border-[#e8d9cb] bg-white p-4 shadow-[0_12px_35px_rgba(92,65,43,0.06)] sm:p-7">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a1846c]">Agenda do estúdio</p><h2 className="mt-1 font-serif text-2xl capitalize text-[#493629]">{calendarMonthLabel}</h2><p className="mt-1 text-sm text-[#8c7767]">Toque num dia para ver quem já marcou horário.</p></div>
+              <div className="flex items-center gap-2">
+                <button type="button" aria-label="Mês anterior" onClick={() => setCalendarMonth(new Date(calendarYear, calendarMonthIndex - 1, 1))} className="grid h-10 w-10 place-items-center rounded-full border border-[#dfcdbd] text-[#705844] hover:bg-[#fbf6f0]"><ChevronLeft size={18}/></button>
+                <button type="button" onClick={() => { const now = new Date(); setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1)); setSelectedCalendarDate(`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`); }} className="rounded-full border border-[#dfcdbd] px-3 py-2 text-sm font-semibold text-[#705844] hover:bg-[#fbf6f0]">Hoje</button>
+                <button type="button" aria-label="Próximo mês" onClick={() => setCalendarMonth(new Date(calendarYear, calendarMonthIndex + 1, 1))} className="grid h-10 w-10 place-items-center rounded-full border border-[#dfcdbd] text-[#705844] hover:bg-[#fbf6f0]"><ChevronRight size={18}/></button>
+              </div>
+            </div>
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => <div key={day} className="py-2 text-center text-xs font-semibold text-[#8c7767]">{day}</div>)}
+              {calendarCells.map((cell, index) => cell ? <button key={cell.date} type="button" onClick={() => setSelectedCalendarDate(cell.date)} aria-pressed={selectedCalendarDate === cell.date} className={`min-h-[68px] rounded-xl border p-1 text-center transition sm:min-h-[88px] sm:p-2 ${selectedCalendarDate === cell.date ? "border-[#76543f] bg-[#76543f] text-white ring-2 ring-[#d9c4b1]" : "border-[#eee4da] bg-[#fffaf5] text-[#493629] hover:border-[#c8aa91]"}`}>
+                <span className="block text-sm font-semibold">{cell.day}</span>
+                {calendarStatusCount(cell.date) > 0 && <span className={`mx-auto mt-1 block max-w-full rounded-full px-1 py-0.5 text-[10px] font-semibold sm:text-xs ${selectedCalendarDate === cell.date ? "bg-white/20 text-white" : "bg-[#efe2d5] text-[#705844]"}`}>{calendarStatusCount(cell.date)} <span className="hidden sm:inline">{calendarStatusCount(cell.date) === 1 ? "cliente" : "clientes"}</span></span>}
+              </button> : <div key={`empty-${index}`} className="min-h-[68px] sm:min-h-[88px]" />)}
+            </div>
+            <div className="mt-6 rounded-2xl border border-[#eadbce] bg-[#fffaf5] p-4 sm:p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div><h3 className="font-serif text-xl text-[#493629]">{new Date(`${selectedCalendarDate}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</h3><p className="mt-1 text-sm text-[#8c7767]">{selectedDayBookings.length} agendamento(s) ativo(s) neste dia</p></div>
+                <button type="button" onClick={() => { setDateFilter(selectedCalendarDate); setHistoryView(false); setStatusFilter("all"); navigateToPage("bookings"); }} className="rounded-full bg-[#705844] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#5e4736]">Ver agendamentos do dia</button>
+              </div>
+              <div className="mt-4 space-y-2">
+                {selectedDayBookings.map(booking => <button key={booking.id} type="button" onClick={() => { setDateFilter(selectedCalendarDate); setHistoryView(false); setStatusFilter("all"); navigateToPage("bookings"); }} className="flex w-full flex-col gap-2 rounded-xl border border-[#eadbce] bg-white p-3 text-left sm:flex-row sm:items-center sm:justify-between">
+                  <span><strong className="text-[#493629]">{booking.bookingTime} · {booking.customerName}</strong><span className="mt-1 block text-xs text-[#8c7767]">{booking.service}</span></span>
+                  <span className={`w-fit rounded-full border px-2.5 py-1 text-xs font-semibold ${booking.status === "confirmed" ? "border-[#d8e6d8] bg-[#edf4ed] text-[#547357]" : booking.status === "pending" ? "border-[#f0dfc5] bg-[#fff5e8] text-[#9a6a35]" : "border-[#e6ddd5] bg-[#f3efeb] text-[#806f62]"}`}>{statusLabels[booking.status] ?? booking.status}</span>
+                </button>)}
+                {selectedDayBookings.length === 0 && <p className="rounded-xl bg-white p-4 text-sm text-[#8c7767]">Nenhum agendamento ativo nesta data.</p>}
+              </div>
+            </div>
+          </section>
 
           <div id="operating" style={{ display: activePage === "operating" ? undefined : "none" }} className="scroll-mt-28"><SalonSettingsPanel /></div>
           <div id="services" style={{ display: activePage === "services" ? undefined : "none" }} className="scroll-mt-28 space-y-7">
