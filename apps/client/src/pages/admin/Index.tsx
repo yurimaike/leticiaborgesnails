@@ -18,6 +18,7 @@ type Booking = {
   bookingDate: string;
   bookingTime: string;
   service: string;
+  appointmentDetails?: string;
   status: string;
   paymentStatus?: "paid" | "unpaid";
   paymentAmountCents?: number | null;
@@ -530,6 +531,7 @@ function AdminContent() {
                       <div className="flex items-center gap-2"><CalendarDays size={16} className="shrink-0 text-[#a1846c]" /> {booking.bookingDate}</div>
                       <div className="flex items-center gap-2"><Clock3 size={16} className="shrink-0 text-[#a1846c]" /> {booking.bookingTime}</div>
                       <div className="sm:col-span-2"><span className="font-semibold text-[#493629]">Serviço:</span> {booking.service}</div>
+                      {booking.appointmentDetails && <div className="sm:col-span-2 rounded-xl border border-[#e7d9cb] bg-[#fffaf4] p-3"><span className="font-semibold text-[#493629]">Detalhes para preparar o atendimento:</span><p className="mt-1 whitespace-pre-wrap">{booking.appointmentDetails}</p></div>}
                       <div className="flex min-w-0 items-center gap-2"><Mail size={16} className="shrink-0 text-[#a1846c]" /><span className="truncate">{booking.customerEmail}</span></div>
                       <div className="flex items-center gap-2"><Phone size={16} className="shrink-0 text-[#a1846c]" /> {booking.customerPhone}</div>
                     </div>
