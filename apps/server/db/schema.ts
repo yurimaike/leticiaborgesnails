@@ -136,7 +136,8 @@ export const bookings = sqliteTable(
     updatedAt: text("updatedAt").notNull().default(sql`CURRENT_TIMESTAMP`),
     decidedAt: text("decidedAt"), decisionNote: text("decisionNote"),
     paymentStatus: text("paymentStatus", { enum: ["unpaid", "paid"] }).notNull().default("unpaid"),
-    paymentUpdatedAt: text("paymentUpdatedAt"), completedAt: text("completedAt")
+    paymentUpdatedAt: text("paymentUpdatedAt"), completedAt: text("completedAt"),
+    appointmentDetails: text("appointmentDetails").notNull().default("")
   },
   (table) => [
     index("idx_bookings_date_status").on(table.bookingDate, table.status),
