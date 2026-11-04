@@ -363,8 +363,7 @@ function AdminContent() {
                 <nav aria-label="Menu administrativo" className="grid gap-1">
                   {[
                     { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
-                    { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
-                      { id: "calendar", label: "Calendário mensal", Icon: CalendarDays },
+                    { id: "calendar", label: "Calendário mensal completo", Icon: CalendarDays },
                     { id: "operating", label: "Funcionamento", Icon: Settings2 },
                     { id: "services", label: "Serviços e preços", Icon: Scissors },
                     { id: "finance", label: "Financeiro", Icon: Wallet },
@@ -391,8 +390,7 @@ function AdminContent() {
                   <nav id="admin-mobile-menu" aria-label="Menu principal" className="mt-2 overflow-hidden rounded-xl border border-[#e9e0d7] bg-white">
                     {[
                       { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
-                      { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
-                      { id: "calendar", label: "Calendário mensal", Icon: CalendarDays },
+                      { id: "calendar", label: "Calendário mensal completo", Icon: CalendarDays },
                       { id: "operating", label: "Funcionamento e horários", Icon: Settings2 },
                       { id: "services", label: "Serviços e preços", Icon: Scissors },
                       { id: "finance", label: "Financeiro", Icon: Wallet },
@@ -420,7 +418,7 @@ function AdminContent() {
               </div>
               {activePage !== "overview" && <div className="mb-6 rounded-2xl border border-[#e9e0d7] bg-white p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a1846c]">Painel administrativo</p><h1 className="mt-1 font-serif text-2xl text-[#493629]">{({ bookings: "Agendamentos", calendar: "Calendário mensal", operating: "Funcionamento e horários", services: "Serviços e preços", finance: "Financeiro", loyalty: "Fidelidade", team: "Equipa e acessos" } as Record<string, string>)[activePage] ?? "Visão geral"}</h1></div>
+                  <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a1846c]">Painel administrativo</p><h1 className="mt-1 font-serif text-2xl text-[#493629]">{({ bookings: "Agendamentos", calendar: "Calendário mensal completo", operating: "Funcionamento e horários", services: "Serviços e preços", finance: "Financeiro", loyalty: "Fidelidade", team: "Equipa e acessos" } as Record<string, string>)[activePage] ?? "Visão geral"}</h1></div>
                   <button type="button" onClick={() => navigateToPage("overview")} className="rounded-full border border-[#d9c4b1] bg-white px-4 py-2 text-sm font-semibold text-[#705844] hover:bg-[#f5e9dd]">Voltar à visão geral</button>
                 </div>
               </div>}
@@ -478,7 +476,7 @@ function AdminContent() {
             <div className="mt-6 rounded-2xl border border-[#eadbce] bg-[#fffaf5] p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div><h3 className="font-serif text-xl text-[#493629]">{new Date(`${selectedCalendarDate}T12:00:00`).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long", year: "numeric" })}</h3><p className="mt-1 text-sm text-[#8c7767]">{selectedDayBookings.length} agendamento(s) ativo(s) neste dia</p></div>
-                <button type="button" onClick={() => { setDateFilter(selectedCalendarDate); setHistoryView(false); setStatusFilter("all"); navigateToPage("bookings"); }} className="rounded-full bg-[#705844] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#5e4736]">Ver agendamentos do dia</button>
+                <button type="button" onClick={() => { setDateFilter(selectedCalendarDate); setHistoryView(false); setStatusFilter("all"); navigateToPage("bookings"); }} className="rounded-full bg-[#705844] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#5e4736]">Gerenciar agendamentos do dia</button>
               </div>
               <div className="mt-4 space-y-2">
                 {selectedDayBookings.map(booking => <button key={booking.id} type="button" onClick={() => { setDateFilter(selectedCalendarDate); setHistoryView(false); setStatusFilter("all"); navigateToPage("bookings"); }} className="flex w-full flex-col gap-2 rounded-xl border border-[#eadbce] bg-white p-3 text-left sm:flex-row sm:items-center sm:justify-between">
