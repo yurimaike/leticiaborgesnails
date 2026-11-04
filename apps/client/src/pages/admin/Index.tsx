@@ -365,7 +365,6 @@ function AdminContent() {
                     { id: "overview", label: "Visão geral", Icon: LayoutDashboard },
                     { id: "bookings", label: "Agendamentos", Icon: CalendarCheck },
                       { id: "calendar", label: "Calendário mensal", Icon: CalendarDays },
-                    { id: "calendar", label: "Calendário mensal", Icon: CalendarDays },
                     { id: "operating", label: "Funcionamento", Icon: Settings2 },
                     { id: "services", label: "Serviços e preços", Icon: Scissors },
                     { id: "finance", label: "Financeiro", Icon: Wallet },
