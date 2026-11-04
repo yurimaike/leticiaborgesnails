@@ -20,7 +20,7 @@ const adminReadLimit = distributedRateLimit((c) => [
 const adminWriteLimit = distributedRateLimit((c) => [
   identityRateLimitCounter("bookings:admin-write", c.var.currentUser?.id, 30, 60)
 ]);
-const createSchema=z.object({customerName:z.string().trim().min(2).max(120),customerEmail:z.string().email().max(254),customerPhone:z.string().min(10).max(20),bookingDate:z.string(),bookingTime:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),service:z.union([z.string().trim().min(2).max(120),z.array(z.string().trim().min(2).max(120)).min(1).max(4).refine(items=>new Set(items).size===items.length,"Selecione serviços sem repetir.")]).transform(value=>Array.isArray(value)?value:[value])});
+const createSchema=z.object({customerName:z.string().trim().min(2).max(120),customerEmail:z.string().email().max(254),customerPhone:z.string().min(10).max(20),bookingDate:z.string(),bookingTime:z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),service:z.union([z.string().trim().min(2).max(120),z.array(z.string().trim().min(2).max(120)).min(1).max(4).refine(items=>new Set(items).size===items.length,"Selecione serviços sem repetir.") ]).transform(value=>Array.isArray(value)?value:[value]),appointmentDetails:z.string().max(1200).optional()});
 const decisionSchema=z.object({action:z.enum(["confirmed","rejected","cancelled"]),note:z.string().max(500).optional()});
 function parsedBody(c:Context){const raw=c.get("rawBody") as Uint8Array|undefined;if(!raw)return null;try{return JSON.parse(new TextDecoder().decode(raw)) as unknown;}catch{return null;}}
 function fail(error:unknown,c:Context){if(error instanceof DatabaseError)return c.json(apiFailure(error.code,error.message),error.status as 400|403|404|409|502|503);throw error;}
