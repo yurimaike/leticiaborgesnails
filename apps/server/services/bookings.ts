@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { DatabaseError, executeSql } from "../_core/db";
 
 export const BOOKING_SERVICES = ["Esmaltação em gel", "Pés tradicional", "Mãos tradicional", "Manutenção"] as const;
-export type BookingInput = { customerName:string; customerEmail:string; customerPhone:string; bookingDate:string; bookingTime:string; service:string | string[] };
+export type BookingInput = { customerName:string; customerEmail:string; customerPhone:string; bookingDate:string; bookingTime:string; service:string | string[]; appointmentDetails?:string };
 function validDate(s:string) { if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false; const d=new Date(`${s}T12:00:00`); return !Number.isNaN(d.getTime()) && d.toISOString().slice(0,10)===s; }
 function ensureDateTime(date:string,time:string) { if(!validDate(date)) throw new DatabaseError("INVALID_INPUT","Data inválida.",400); const target=new Date(`${date}T${time}:00-03:00`); if(target.getTime()<=Date.now()) throw new DatabaseError("INVALID_INPUT","Escolha uma data e horário futuros.",400); }
 export async function listBusyTimes(date:string) { if(!validDate(date)) throw new DatabaseError("INVALID_INPUT","Data inválida.",400); const r=await executeSql("SELECT bookingTime FROM bookings WHERE bookingDate = ? AND status IN ('pending','confirmed')",[date]); return r.rows.map(x=>String(x.bookingTime)); }
@@ -27,9 +27,10 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
   const name=input.customerName.trim(); const email=input.customerEmail.trim().toLowerCase(); const phone=input.customerPhone.replace(/\D/g,"");
   if(name.length<2||name.length>120||!/^\S+@\S+\.\S+$/.test(email)||phone.length<10||phone.length>13) throw new DatabaseError("INVALID_INPUT","Confira nome, e-mail e WhatsApp.",400);
   const serviceList=services.join(", ");
+  const appointmentDetails=(input.appointmentDetails??"").trim().slice(0,1200);
   const id=randomUUID(); const bookingCode=`LET-${randomBytes(4).toString("hex").toUpperCase()}`;
   const userId = verifiedUser && verifiedUser.email.toLowerCase() === email ? verifiedUser.id : null;
-  try { await executeSql("INSERT INTO bookings (id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,userId) VALUES (?,?,?,?,?,?,?,?, 'pending',?)",[id,bookingCode,name,email,phone,input.bookingDate,input.bookingTime,serviceList,userId]); }
+  try { await executeSql("INSERT INTO bookings (id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,appointmentDetails,status,userId) VALUES (?,?,?,?,?,?,?,?,?, 'pending',?)",[id,bookingCode,name,email,phone,input.bookingDate,input.bookingTime,serviceList,appointmentDetails,userId]); }
   catch(e) {
     if (e instanceof DatabaseError && e.code === "SLOT_UNAVAILABLE") throw e;
     const msg = e instanceof DatabaseError ? e.databaseMessage : e instanceof Error ? e.message : "";
@@ -38,9 +39,9 @@ export async function createBooking(input:BookingInput, verifiedUser?:{id:string
     }
     throw e;
   }
-  return { id, bookingCode, customerName:name, customerEmail:email, customerPhone:phone, bookingDate:input.bookingDate, bookingTime:input.bookingTime, service:serviceList, status:"pending" as const };
+  return { id, bookingCode, customerName:name, customerEmail:email, customerPhone:phone, bookingDate:input.bookingDate, bookingTime:input.bookingTime, service:serviceList, appointmentDetails, status:"pending" as const };
 }
-export async function listBookings() { const r=await executeSql("SELECT id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,createdAt,updatedAt,decidedAt,decisionNote,paymentStatus,paymentAmountCents,paymentUpdatedAt,completedAt FROM bookings ORDER BY bookingDate DESC, bookingTime DESC"); return r.rows; }
+export async function listBookings() { const r=await executeSql("SELECT id,bookingCode,customerName,customerEmail,customerPhone,bookingDate,bookingTime,service,status,createdAt,updatedAt,decidedAt,decisionNote,paymentStatus,paymentAmountCents,paymentUpdatedAt,completedAt,appointmentDetails FROM bookings ORDER BY bookingDate DESC, bookingTime DESC"); return r.rows; }
 export async function listCustomerBookings(userId:string, verifiedEmail:string) {
   if (!userId || !verifiedEmail.trim()) throw new DatabaseError("INVALID_INPUT","Verified identity is required.",400);
   const normalizedEmail = verifiedEmail.trim().toLowerCase();
